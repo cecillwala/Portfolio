@@ -1,0 +1,44 @@
+.header{
+    padding: 12px;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+}
+body{
+    padding: 20px;
+    color: #fff;
+    background-color: #00142d;
+}
+.link{
+    text-decoration: none;
+    color: #fff;
+    border: none;
+    background-color: #00142d;
+}
+.link:hover{
+    transition: all 200ms ease-in-out;
+    color: #939292;
+}
+.projects{
+    text-align: center;
+}
+.project-header{
+    opacity: 0.33;
+    color: #d3d3d3;
+    font-size: 50px;
+}
+.project-title{
+    text-align: left;
+}
+.project{
+    border-radius: 30px;
+    border: none;
+    color: #fff;
+    background-color: #001f3f;
+    padding: 50px;
+    margin: 30px;
+}
+.project:hover{
+    padding: 60px;
+    transition: all 150ms ease-in-out;
+}
