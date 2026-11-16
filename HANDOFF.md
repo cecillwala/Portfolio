@@ -37,6 +37,22 @@ Known rough edges:
   Musoni page has its own, newer copy in `src/pages/musoni.astro`.
 - No type-check has been run.
 
+## Interface update (2026-11-16)
+
+- Interface and body text now use the system sans-serif stack; the canvas lettering and
+  Cecil remain pixel art. The unused pixel font preload has been removed.
+- The home street uses a dark information card instead of the typewriter bubble: building
+  heading, summary, status, accent colour and a direct action. Unbuilt doors link to their
+  corresponding section on `/work`; Musoni retains its doorway transition.
+- Cards sit above Cecil at phone widths, clamp within the viewport, scroll when space is
+  limited, and can be dismissed with the close button or Escape. Short landscape screens
+  use a side card. The Musoni interior still uses the original speech bubble.
+- Production build and simulated DOM interaction checks passed. With Cecil's own dev
+  server running at `http://localhost:4321`, browser checks also passed at 1440×900,
+  390×844, 320×568 and 844×390. Verified welcome/building cards, dismissal, keyboard
+  selection and focus return, and navigation into Musoni; no browser errors were logged.
+  Keyboard focus now waits one animation frame for the opened card to become visible.
+
 ## Clean-up on Cecil's machine
 
 Files from the rejected draft could not be deleted remotely. They are unused and safe to remove:

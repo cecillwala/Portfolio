@@ -1,18 +1,18 @@
 // The home page: a street in Nairobi at night. Everything is drawn here, in code.
 // The view is 426x240 art pixels; the street is wider and the camera follows Cecil.
-import { still, rng, dth, layer, R, mix, shade, textW, neon, loadCecil, drawCecil, SPRITE, blip, chime, step, door, soundButton, speech } from './pixel.js';
+import { still, rng, dth, layer, R, mix, shade, textW, neon, loadCecil, drawCecil, SPRITE, blip, chime, step, door, soundButton } from './pixel.js';
 
 const VW = 426, H = 240, GY = 200, W = 704, PAD = 14;
 const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 
 /** The places on the street. href: the page behind the door, or null while it is being built. */
 const P = [
-  { id: 'EGERTON', x: 20, w: 104, h: 88, neon: '#7dff9a', kind: 'hall', href: null, say: 'Egerton University. Computer Science, 2022 to 2026. I graduate on 27 November.' },
-  { id: 'PODII', x: 142, w: 64, h: 104, neon: '#c79bff', kind: 'office', href: null, say: 'Podii Consultants. My first desk: six months as a technical intern in 2024.' },
-  { id: 'GIKTEK', x: 228, w: 104, h: 132, neon: '#5fe1ff', kind: 'tower', href: null, say: 'GikTek. Spring Boot, Angular, Kubernetes, and the dashboards that watch them.' },
-  { id: 'MUSONI', x: 356, w: 98, h: 104, neon: '#ff9a5c', kind: 'shop', href: '/musoni', say: 'Musoni. The loan app I led: Flutter app, backend, staff portal and USSD.' },
-  { id: 'LEXIMS', x: 478, w: 96, h: 126, neon: '#ffe066', kind: 'archive', href: null, say: 'LexIMS. Audits and ISO compliance, with an intelligence layer I am building.' },
-  { id: 'POST', x: 602, w: 76, h: 62, neon: '#ff6b8b', kind: 'post', href: null, say: 'The post office. My card lives here.' },
+  { id: 'EGERTON', title: 'Egerton University', category: 'Education · 2022–2026', status: 'Graduating 27 November 2026', x: 20, w: 104, h: 88, neon: '#7dff9a', kind: 'hall', href: null, say: 'Egerton University. Computer Science, 2022 to 2026. I graduate on 27 November.' },
+  { id: 'PODII', title: 'Podii Consultants', category: 'Experience · 2024', status: 'Technical intern · Six months', x: 142, w: 64, h: 104, neon: '#c79bff', kind: 'office', href: null, say: 'Podii Consultants. My first desk: six months as a technical intern in 2024.' },
+  { id: 'GIKTEK', title: 'GikTek', category: 'Experience', status: 'Spring Boot · Angular · Kubernetes', x: 228, w: 104, h: 132, neon: '#5fe1ff', kind: 'tower', href: null, say: 'GikTek. Spring Boot, Angular, Kubernetes, and the dashboards that watch them.' },
+  { id: 'MUSONI', title: 'Musoni', category: 'Featured project', status: 'In testing · Over 130 active users', x: 356, w: 98, h: 104, neon: '#ff9a5c', kind: 'shop', href: '/musoni', say: 'Musoni. The loan app I led: Flutter app, backend, staff portal and USSD.' },
+  { id: 'LEXIMS', title: 'LexIMS', category: 'Project · In development', status: 'Integrated Management System', x: 478, w: 96, h: 126, neon: '#ffe066', kind: 'archive', href: null, say: 'An Integrated Management System for projects, compliance, audits and continual improvement.' },
+  { id: 'POST', title: 'Let’s connect', category: 'The post office', status: '', x: 602, w: 76, h: 62, neon: '#ff6b8b', kind: 'post', href: null, say: 'Find my details and links on the work page. I’m a software developer based in Nairobi.' },
 ];
 const BODY = '#12163a', HI = '#262d62', LO = '#0a0d26', TRIM = '#2e3670';
 
@@ -202,23 +202,59 @@ export async function initStreet(onProgress = () => {}) {
     for (const wx of [6, 26]) { R(c, '#05060f', x + wx, y + 10, 6, 5); R(c, '#05060f', x + wx - 1, y + 11, 8, 3); R(c, '#8e96c9', x + wx + 2, y + 12, 2, 1); }
   }
 
-  // ---------- Cecil, the bubble and its reply buttons ----------
+  // ---------- Cecil and the readable information panel ----------
   const C = { x: 312, tx: 312, dir: 1, key: 0, mode: 'idle', at: null, goal: null, waveUntil: 0, step: 0 };
-  const bubbleEl = document.getElementById('bubble');
-  const talk = speech(bubbleEl);
+  const panel = document.getElementById('place-card');
+  const panelTitle = document.getElementById('place-title');
+  const panelActions = panel.querySelector('.place-card__actions');
+  let panelTrigger = null, focusOnArrival = false;
+  function closePanel(restoreFocus = false) {
+    const hadFocus = panel.contains(document.activeElement);
+    panel.classList.add('off');
+    panel.inert = true;
+    panel.setAttribute('aria-hidden', 'true');
+    if (restoreFocus && hadFocus) panelTrigger?.focus();
+  }
+  function showPanel(title, description, category, actions, status = '', accent = '#ffe066') {
+    if (!panel.contains(document.activeElement)) panelTrigger = document.activeElement;
+    panelTitle.textContent = title;
+    document.getElementById('place-description').textContent = description;
+    document.getElementById('place-category').textContent = category;
+    const statusEl = document.getElementById('place-status');
+    statusEl.textContent = status;
+    statusEl.hidden = !status;
+    panelActions.replaceChildren(...actions);
+    panel.style.setProperty('--accent', accent);
+    panel.scrollTop = 0;
+    panel.inert = false;
+    panel.setAttribute('aria-hidden', 'false');
+    panel.classList.remove('off');
+    // Follow keyboard selection into the panel, without stealing pointer focus.
+    if (focusOnArrival || panelTrigger?.closest('#places')) {
+      // Wait for visibility to update before focusing a previously hidden card.
+      requestAnimationFrame(() => {
+        if (!panel.inert) panelTitle.focus({ preventScroll: true });
+      });
+    }
+    focusOnArrival = false;
+  }
+  panel.querySelector('.place-card__close').addEventListener('click', () => closePanel(true));
   const hint = document.getElementById('hint');
   let cam = Math.max(0, Math.min(W - VW, C.x - VW / 2));
   let busX = W + 60, planeX = 90, hover = null, mx = 0, mxS = 0, lastAct = performance.now(), leaving = false;
 
   const chip = (label, fn, primary = false) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (primary) b.className = 'primary'; b.addEventListener('click', (e) => { e.stopPropagation(); fn(); }); return b; };
   const link = (label, href) => { const a = document.createElement('a'); a.textContent = label; a.href = base + href; return a; };
-  const note = (label) => { const s = document.createElement('span'); s.textContent = label; return s; };
   const pick = (id) => P.find((p) => p.id === id);
 
-  function go(b) { C.tx = b.doorX; C.at = null; C.goal = b; C.mode = 'walk'; talk.say(''); blip(660, 0.04); lastAct = performance.now(); hint.hidden = true; }
+  function go(b) { focusOnArrival = panel.contains(document.activeElement) || !!document.activeElement?.closest('#places'); C.tx = b.doorX; C.at = null; C.goal = b; C.mode = 'walk'; closePanel(true); blip(660, 0.04); lastAct = performance.now(); hint.hidden = true; }
   function arrive(b) {
     C.at = b; chime();
-    talk.say(b.say, b.href ? [chip('Go in', () => enter(b), true), chip('Somewhere else', () => talk.say('Pick any lit doorway.'))] : [note('Opening soon'), chip('Take me to Musoni', () => go(pick('MUSONI')))]);
+    const actions = b.href
+      ? [chip('Explore ' + b.title + ' →', () => enter(b), true)]
+      : [link(b.id === 'POST' ? 'View contact details →' : 'Read more on my work →', '/work#' + ({ EGERTON: 'egerton', PODII: 'podii', GIKTEK: 'giktek', LEXIMS: 'lexims', POST: 'contact' }[b.id]))];
+    actions[0].classList.add('primary');
+    showPanel(b.title, b.say, b.category, actions, b.status, b.neon);
   }
   function enter(b) {
     if (leaving || !b.href) return;
@@ -231,10 +267,9 @@ export async function initStreet(onProgress = () => {}) {
     setTimeout(() => { location.href = base + b.href; }, still ? 0 : 620);
   }
   function greet() {
-    talk.say('Karibu. I am Cecil, and this street is my career so far. Where to?', [
-      chip('Show me your best work', () => go(pick('MUSONI')), true),
-      chip('Who are you?', () => talk.say('A software developer in Nairobi. I build mobile apps, the backends behind them and the infrastructure they run on.', [chip('Show me', () => go(pick('MUSONI')), true)])),
-      link('Just the text', '/work'),
+    showPanel('Karibu. I’m Cecil.', 'A software developer in Nairobi. This street is my career so far. Choose a building to explore my work.', 'Meet your guide', [
+      chip('Explore Musoni →', () => go(pick('MUSONI')), true),
+      link('Browse all work', '/work'),
     ]);
   }
 
@@ -250,8 +285,9 @@ export async function initStreet(onProgress = () => {}) {
     if (b) { if (C.at === b && b.href) enter(b); else go(b); }
   });
   addEventListener('keydown', (e) => {
-    if (e.target instanceof HTMLElement && e.target.closest('button, a') && e.key === 'Enter') return;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { C.key = e.key === 'ArrowLeft' ? -1 : 1; C.goal = null; C.at = null; C.mode = 'walk'; talk.say(''); hint.hidden = true; lastAct = performance.now(); e.preventDefault(); }
+    if (e.key === 'Escape') { closePanel(true); return; }
+    if (e.target instanceof HTMLElement && (e.target.closest('button, a') && e.key === 'Enter' || e.target.closest('#place-card') && e.key.startsWith('Arrow'))) return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { C.key = e.key === 'ArrowLeft' ? -1 : 1; C.goal = null; C.at = null; C.mode = 'walk'; closePanel(); hint.hidden = true; lastAct = performance.now(); e.preventDefault(); }
     if (e.key === 'Enter' && C.at && C.at.href) enter(C.at);
   });
   addEventListener('keyup', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { C.key = 0; C.tx = C.x; } });
@@ -314,11 +350,9 @@ export async function initStreet(onProgress = () => {}) {
       C.goal = null;
       if (b && C.at !== b) arrive(b);
     }
-    talk.tick(now);
     let f = SPRITE.idle;
     if (moving) f = SPRITE.walk + C.step;
-    else if (now < C.waveUntil) f = talk.talking ? SPRITE.waveTalk : SPRITE.wave;
-    else if (talk.talking) f = Math.floor(t * 8) % 2 ? SPRITE.talk : SPRITE.idle;
+    else if (now < C.waveUntil) f = SPRITE.wave;
     else f = Math.floor(t * 0.9) % 6 === 5 ? SPRITE.blink : SPRITE.idle;
     shade(g, '#0a0c22', C.x - 12, GY + 9, C.x + 12, GY + 15, (x, y) => (((x - C.x) / 11) ** 2 + ((y - GY - 12) / 2.6) ** 2 < 1 ? 0.6 : 0));
     drawCecil(g, sheet, f, C.x, GY + 13, moving && C.dir < 0);
@@ -327,11 +361,12 @@ export async function initStreet(onProgress = () => {}) {
     matatu(g, busX, GY + 22);
     g.restore();
 
-    const sx = ((C.x - cr) / VW) * 100, half = (bubbleEl.offsetWidth / 2 / view.clientWidth) * 100 + 1, off = (edge / VW) * 100;
-    const left = Math.max(off + half, Math.min(100 - off - half, sx));
-    bubbleEl.style.left = left + '%';
-    bubbleEl.style.top = ((GY + 13 - 35 - 7) / H) * 100 + '%';
-    bubbleEl.style.setProperty('--tail', Math.max(8, Math.min(92, 50 + (sx - left) * 2.1)) + '%');
+    // The panel lives outside the scaled/cropped artwork, so type stays readable.
+    const sx = (C.x - cr - edge) / visW * stage.clientWidth;
+    const half = panel.offsetWidth / 2;
+    const left = Math.max(half + 16, Math.min(stage.clientWidth - half - 16, sx));
+    panel.style.setProperty('--panel-x', left + 'px');
+    panel.style.setProperty('--panel-bottom', (69 * view.clientHeight / H) + 'px');
     requestAnimationFrame(frame);
   }
   C.waveUntil = performance.now() + 2600;
