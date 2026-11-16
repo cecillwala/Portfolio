@@ -59,7 +59,12 @@ const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
         {sections.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
       </nav>
 
-      <article class="story">
+      <button class="chip guide-toggle" id="guide-toggle" type="button" aria-pressed="true" hidden>Hide Cecil’s guide</button>
+      <article class="story guided-story">
+        <aside class="page-guide" id="page-guide" aria-label="Cecil’s guide" hidden>
+          <p class="page-guide__words"></p>
+          <span class="page-guide__sprite" aria-hidden="true"></span>
+        </aside>
         <section id="brief">
           <h2>It started with conversations, not code</h2>
           <p class="lead">The project began in January 2026. I picked it up in May and took the lead. Before writing anything, I sat down with the client to understand what their borrowers needed.</p>

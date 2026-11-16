@@ -1,5 +1,6 @@
 // The Musoni page: the shop interior at the top, the pixel phone illustrations, and the neon title.
 import { still, dth, layer, R, mix, shade, text, textW, neon, loadCecil, drawCecil, SPRITE, blip, chime, step, door, soundButton, speech, fitStage } from './pixel.js';
+import { initPageGuide } from './page-guide.js';
 import { initUssd } from './ussd.js';
 
 const RW = 426, RH = 150, FY = 112;
@@ -202,5 +203,5 @@ function initToc() {
 
 export function initMusoni() {
   soundButton(document.getElementById('snd'));
-  initRoom(); initTitles(); initPhones(); initToc(); initUssd();
+  initRoom(); initTitles(); initPhones(); initToc(); initUssd(); initPageGuide();
 }

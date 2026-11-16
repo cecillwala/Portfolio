@@ -366,6 +366,7 @@ export async function initStreet(onProgress = () => {}) {
     const half = panel.offsetWidth / 2;
     const left = Math.max(half + 16, Math.min(stage.clientWidth - half - 16, sx));
     panel.style.setProperty('--panel-x', left + 'px');
+    panel.style.setProperty('--tail', Math.max(8, Math.min(92, 50 + (sx - left) / panel.offsetWidth * 100)) + '%');
     panel.style.setProperty('--panel-bottom', (69 * view.clientHeight / H) + 'px');
     requestAnimationFrame(frame);
   }

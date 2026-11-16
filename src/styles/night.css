@@ -197,3 +197,46 @@ button.chip[aria-pressed='true'], a.chip:hover { background: var(--accent); colo
   .bubble { font-size: 13px; }
   .hint { display: none; }
 }
+
+/* Conversation bubbles: plain readable type, with the original ink outline and tail. */
+.place-card {
+  overflow: visible; padding: 16px 20px; border: 3px solid var(--ink); border-radius: 0;
+  background: var(--text); color: var(--ink); box-shadow: 4px 4px 0 var(--ink); backdrop-filter: none;
+}
+.place-card::after { content: ''; position: absolute; left: calc(var(--tail, 50%) - 7px); bottom: -10px; width: 14px; height: 14px; transform: rotate(45deg); background: var(--text); border: solid var(--ink); border-width: 0 3px 3px 0; }
+.place-card__header { float: right; margin: -10px -14px 0 8px; }
+.place-card__eyebrow, .place-card__status { display: none; }
+.place-card__close { color: var(--ink); }
+.place-card__close:hover { background: #10103010; color: var(--ink); }
+.place-card h2 { font-size: 18px; letter-spacing: 0; }
+.place-card__description { color: var(--ink); }
+.place-card__actions { margin-top: 14px; }
+.place-card__actions > * { border: 2px solid var(--ink); border-radius: 0; color: var(--ink); padding: 8px 12px; }
+.place-card__actions > .primary { background: var(--warm); border-color: var(--ink); }
+.place-card__actions > :hover { background: var(--ink); color: var(--text); filter: none; }
+/* Keep short-screen bubbles scrollable; the tail is decorative. */
+@media (max-height: 650px) { .place-card { overflow-y: auto; } }
+
+/* Cecil's section stops reserve their own space, including on narrow screens. */
+.cols:has(.guided-story) { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.cols:has(.guided-story) .toc { position: static; display: flex; flex-wrap: wrap; gap: 8px; }
+.guide-toggle { justify-self: start; }
+.guided-story { min-width: 0; padding-left: 180px; }
+.guided-story > section { position: relative; min-height: 250px; }
+.guide-stop { position: absolute; right: calc(100% + 28px); top: 0; width: 152px; }
+.page-guide { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.page-guide[hidden], .guide-toggle[hidden] { display: none; }
+.page-guide__words { position: relative; margin: 0 !important; padding: 12px; border: 2px solid var(--ink); background: var(--text); color: var(--ink); box-shadow: 3px 3px 0 var(--ink); font-size: 14px !important; line-height: 1.5; }
+.page-guide__words::after { content: ''; position: absolute; bottom: -8px; left: calc(50% - 6px); width: 12px; height: 12px; transform: rotate(45deg); background: var(--text); border: solid var(--ink); border-width: 0 2px 2px 0; }
+.page-guide__sprite { flex: 0 0 auto; width: 60px; height: 74px; background: url('/sprites/cecil.png') -420px 0 / 600px 74px no-repeat; image-rendering: pixelated; }
+.walking .page-guide__sprite { animation: guide-walk 0.6s steps(4) infinite; }
+@keyframes guide-walk { from { background-position-x: -180px; } to { background-position-x: -420px; } }
+.guide-hidden .page-guide { visibility: hidden; }
+@media (max-width: 860px) {
+  .guided-story { padding-left: 0; }
+  .guide-stop { position: static; width: 100%; min-height: 156px; padding-bottom: 24px; }
+  .page-guide { flex-direction: row-reverse; justify-content: flex-end; align-items: flex-end; gap: 16px; }
+  .page-guide__words { max-width: 300px; }
+  .page-guide__words::after { bottom: 20px; left: -8px; transform: rotate(135deg); }
+}
+@media (prefers-reduced-motion: reduce) { .walking .page-guide__sprite { animation: none; } }
