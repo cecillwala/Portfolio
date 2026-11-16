@@ -16,15 +16,19 @@ const P = [
 ];
 const BODY = '#12163a', HI = '#262d62', LO = '#0a0d26', TRIM = '#2e3670';
 
-export async function initStreet() {
+export async function initStreet(onProgress = () => {}) {
   // Keep the loading screen up until the page, typeface and character are ready.
   const sheet = loadCecil();
+  // Three asset milestones plus the first complete scene frame. These are readiness
+  // percentages, rather than an estimate of downloaded bytes.
+  let ready = 0;
+  const track = (promise) => promise.then(() => onProgress(++ready * 25));
   await Promise.all([
-    sheet.decode(),
-    document.fonts.ready,
-    document.readyState === 'complete' ? Promise.resolve() : new Promise((resolve) => {
+    track(sheet.decode()),
+    track(document.fonts.ready),
+    track(document.readyState === 'complete' ? Promise.resolve() : new Promise((resolve) => {
       window.addEventListener('load', resolve, { once: true });
-    }),
+    })),
   ]);
   const stage = document.getElementById('stage'), cv = document.getElementById('street');
   cv.width = VW; cv.height = H;
@@ -336,4 +340,5 @@ export async function initStreet() {
   await new Promise((resolve, reject) => requestAnimationFrame((now) => {
     try { frame(now); resolve(); } catch (error) { reject(error); }
   }));
+  onProgress(100);
 }

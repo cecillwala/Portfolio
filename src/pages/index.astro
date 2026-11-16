@@ -20,9 +20,8 @@ import { person } from '../content/story';
   </script>
   <div class="street-loader" aria-label="Loading the street">
     <div class="street-loader__content">
-      <p class="street-loader__name">{person.name}</p>
-      <p class="street-loader__welcome">Karibu<span>.</span></p>
-      <div class="street-loader__track" aria-hidden="true"><span></span></div>
+      <div class="street-loader__cecil" aria-hidden="true"></div>
+      <div class="street-loader__progress" id="loading-progress" role="progressbar" aria-label="Loading the street" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</div>
       <p class="street-loader__status" id="loading-status" role="status">Loading Nairobi after dark…</p>
       <a class="street-loader__skip" href="/work">Go straight to my work &rarr;</a>
     </div>
@@ -58,14 +57,7 @@ import { person } from '../content/story';
   <div class="iris" id="iris"></div>
   <script>
     import { initStreet } from '../scripts/street.js';
-    try {
-      await initStreet();
-      document.dispatchEvent(new Event('street:ready'));
-    } catch (error) {
-      console.error('The street could not load.', error);
-      const status = document.getElementById('loading-status');
-      if (status) status.textContent = 'The street could not load. Please refresh, or browse my work below.';
-      document.dispatchEvent(new Event('street:error'));
-    }
+    import { loadStreet } from '../scripts/loading.js';
+    loadStreet(initStreet);
   </script>
 </Night>
