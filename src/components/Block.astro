@@ -1,0 +1,155 @@
+---
+// Renders one content block from src/content/story.ts. The chapter's theme decides how a
+// .panel looks (chalkboard, sticky note, console, binder page), so the markup stays the same.
+import type { Block } from '../content/story';
+import { person } from '../content/story';
+import BusinessCard from './BusinessCard.astro';
+
+interface Props {
+  block: Block;
+}
+const { block: b } = Astro.props;
+---
+
+{
+  b.kind === 'hero' && (
+    <div class="hero-block">
+      <h1>{person.name}</h1>
+      <p class="role">{person.title}</p>
+      <p class="line">{person.line}</p>
+      <div class="actions">
+        <a class="btn" href="#egerton">
+          Start the journey
+        </a>
+        <a class="btn quiet-style" href="/browse">
+          Browse my work
+        </a>
+      </div>
+    </div>
+  )
+}
+
+{
+  b.kind === 'reasons' && (
+    <div class="reasons">
+      {b.items.map((r) => (
+        <div class="panel">
+          <h3>{r.title}</h3>
+          <p>{r.text}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+{
+  b.kind === 'card' && (
+    <div class="panel">
+      <h3>{b.title}</h3>
+      <p class="meta">{b.meta}</p>
+      {b.lines?.map((l) => <p>{l}</p>)}
+      {b.tags && <ul class="tags">{b.tags.map((t) => <li>{t}</li>)}</ul>}
+    </div>
+  )
+}
+
+{
+  b.kind === 'list' && (
+    <div class="panel">
+      <h3>{b.title}</h3>
+      <ul class="plain">{b.items.map((i) => <li>{i}</li>)}</ul>
+      {b.tags && <ul class="tags">{b.tags.map((t) => <li>{t}</li>)}</ul>}
+    </div>
+  )
+}
+
+{
+  b.kind === 'stations' && (
+    <div class="panel">
+      <dl class="stations">
+        {b.rows.map((r) => (
+          <div>
+            <dt>{r.name}</dt>
+            <dd>{r.did}</dd>
+            <dd class="tools">{r.tools}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
+{
+  b.kind === 'phones' && (
+    <div class="panel">
+      <h3>{b.title}</h3>
+      <div class="phones">
+        {b.shots.map((s) => (
+          <div class="phone">{s.file ? <img src={s.file} alt={s.label} loading="lazy" /> : <span>{s.label}</span>}</div>
+        ))}
+      </div>
+      {b.shots.some((s) => !s.file) && <p class="shot-note">Screenshots coming soon.</p>}
+    </div>
+  )
+}
+
+{
+  b.kind === 'ussd' && (
+    <div class="panel">
+      <h3>{b.title}</h3>
+      <div class="ussd">
+        {b.screens.map((lines) => (
+          <div class="lcd">{lines.map((l) => <p>{l}</p>)}</div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+{
+  b.kind === 'safeguards' && (
+    <div class="panel">
+      <ul class="safeguards">
+        {b.items.map((s) => (
+          <li>
+            <strong>{s.name}</strong>
+            {s.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+{
+  b.kind === 'stats' && (
+    <div class="panel">
+      <ul class="stats">
+        {b.items.map((s) => (
+          <li class={s.estimate ? 'est' : undefined}>
+            <b>{s.value}</b>
+            <span>{s.label}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+{
+  b.kind === 'jobs' && (
+    <div class="panel">
+      <h3>What the intelligence layer does</h3>
+      <dl class="jobs">
+        {b.rows.map((r) => (
+          <div>
+            <dt>{r.name}</dt>
+            <dd>{r.example}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
+{b.kind === 'contact' && <BusinessCard />}

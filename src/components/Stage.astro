@@ -1,0 +1,13 @@
+---
+// The fixed strip at the bottom of the screen: the ground, pixel Cecil and his speech bubble.
+// Everything here is driven by src/scripts/mascot.ts.
+---
+
+<div class="stage" aria-hidden="true">
+  <div class="ground"></div>
+  <div class="mascot" id="mascot">
+    <div class="flip"><div class="sprite"></div><div class="prop"></div></div>
+  </div>
+  <div class="bubble empty" id="bubble" data-side="top"><span class="on"></span><span class="off"></span></div>
+</div>
+<p class="sr-only" aria-live="polite" id="say-live"></p>

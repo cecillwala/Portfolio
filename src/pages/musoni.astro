@@ -1,0 +1,160 @@
+---
+// Behind the Musoni door. Long-form copy lives in this file; facts are listed in HANDOFF.md.
+// Rule: name features and safeguards, never how they are built.
+import Night from '../layouts/Night.astro';
+
+const ACCENT = '#ff9a5c';
+const sections = [
+  ['brief', 'The brief'],
+  ['the-app', 'The app'],
+  ['ussd', 'Try the USSD menu'],
+  ['behind', 'Behind the app'],
+  ['safeguards', 'Safeguards'],
+  ['running', 'Seeing it run'],
+  ['now', 'Where it stands'],
+];
+const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
+---
+
+<Night title="Musoni: the loan app I led. Cecil Lwala" description="A lending platform Cecil Lwala led: Flutter app, Spring Boot backend, staff portal and a USSD channel for any phone." accent={ACCENT}>
+  <header class="bar">
+    <a class="chip" href="/">Back to the street</a>
+    <span class="sp"></span>
+    <button class="chip" id="snd" type="button" aria-pressed="false">Sound: off</button>
+    <a class="chip" href="/work">All work</a>
+  </header>
+
+  <section class="room" aria-label="Inside the Musoni shop">
+    <div class="stage" id="room-stage">
+      <canvas id="room" role="img" aria-label="Inside the Musoni shop at night: a counter with a smartphone and a feature phone on it, a server on a shelf, a wall monitor, a safe, and a door back to the street. Pixel Cecil stands by the window."></canvas>
+      <div class="bubble off" id="room-bubble" aria-live="polite"><span class="typed"></span><span class="rest"></span><div class="chips"></div></div>
+      <div class="tip" id="room-tip" hidden></div>
+      <nav class="sr" aria-label="Things in the shop" id="room-places"></nav>
+    </div>
+  </section>
+
+  <main class="page">
+    <header class="title">
+      <h1 class="sr">Musoni</h1>
+      <canvas class="neon-title" data-text="MUSONI" data-color={ACCENT} aria-hidden="true"></canvas>
+      <p class="sub">The loan app I led: a mobile app, its backend, a staff portal, and a USSD channel for any phone.</p>
+      <dl class="facts">
+        <dt>Role</dt><dd>Lead developer, at GikTek</dd>
+        <dt>When</dt><dd>Picked up in May 2026. Build closed in early August 2026.</dd>
+        <dt>Status</dt><dd>In testing ahead of its Play Store release</dd>
+        <dt>Built with</dt><dd>Flutter, Dart, Java, Spring Boot, PostgreSQL, M-Pesa, USSD</dd>
+      </dl>
+      <div class="figures">
+        <div><b>130+</b><span>active users</span></div>
+        <div><b>4</b><span>things built: app, backend, staff portal, USSD</span></div>
+        <div><b>3</b><span>months from picking it up to closing the build</span></div>
+        {/* TODO(Cecil): the next two are placeholder estimates you asked for. Replace them and remove class="est". */}
+        <div class="est"><b>250</b><span>loan applications</span></div>
+        <div class="est"><b>5 min</b><span>typical sign-up time</span></div>
+      </div>
+    </header>
+
+    <div class="cols">
+      <nav class="toc" aria-label="On this page">
+        {sections.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
+      </nav>
+
+      <article class="story">
+        <section id="brief">
+          <h2>It started with conversations, not code</h2>
+          <p class="lead">The project began in January 2026. I picked it up in May and took the lead. Before writing anything, I sat down with the client to understand what their borrowers needed.</p>
+          <p>The answer was simple to say and hard to build: a loan you can apply for, and repay, from whatever phone you own. That one sentence decided the shape of everything that followed. People with smartphones get an app. People without get a USSD menu. Staff get a portal to review customers and approve loans.</p>
+          <p>I built all of it.</p>
+        </section>
+
+        <section id="the-app">
+          <h2>The app</h2>
+          <p class="lead">Built in Flutter. Three moments matter most to a borrower.</p>
+          <ol class="steps">
+            <li><canvas id="ph-signup" role="img" aria-label="Illustration of the sign-up screen: an ID card and a selfie being checked."></canvas><b>Prove who you are</b>A phone number and a one-time code, then a national ID and a selfie.</li>
+            <li><canvas id="ph-offer" role="img" aria-label="Illustration of the loan offer screen: the amount, the fees and the total to repay."></canvas><b>See the full cost</b>Every offer shows what you get, what it costs and what you repay, before you accept.</li>
+            <li><canvas id="ph-repay" role="img" aria-label="Illustration of the repayment screen: a payment moving from sent, to confirmed, to paid."></canvas><b>Repay by M-Pesa</b>Pay from the app and watch the payment go from sent to confirmed to paid.</li>
+          </ol>
+          <p class="note">These are illustrations, not screenshots. The real screens are on their way.</p>
+          <ul class="pairs">
+            <li><b>Pick up where you left</b>Drop out halfway through sign-up and the app brings you back to the same step.</li>
+            <li><b>The form, signed in the app</b>The loan application form is filled in and signed on the phone. No paper.</li>
+            <li><b>Statements</b>A borrower can see what they owe and what they have paid.</li>
+            <li><b>Branches</b>A directory of branches for anyone who would rather walk in.</li>
+          </ul>
+        </section>
+
+        <section id="ussd">
+          <h2>Not every borrower has a smartphone</h2>
+          <p class="lead">So I built a USSD channel. Dial, enter a PIN, apply, check a balance, repay. Any phone works, and nobody is left out because of the handset they own.</p>
+          <div class="ussd">
+            <div class="handset" id="handset" tabindex="0" aria-label="A feature phone running the Musoni USSD menu. Use the buttons or your number keys.">
+              <div class="brand">MUSONI DEMO</div>
+              <div class="lcd" id="lcd" aria-live="polite"></div>
+              <div class="soft"><button type="button" data-k="clear">Clear</button><button type="button" data-k="send">Send</button></div>
+              <div class="keys">{keys.map((k) => <button type="button" data-k={k}>{k}</button>)}</div>
+            </div>
+            <div class="ussd-side">
+              <p>This one works. The yellow keys are the ones that do something.</p>
+              <ol>
+                <li>Press Send to dial.</li>
+                <li>Enter any four digits as a PIN.</li>
+                <li>Apply for a loan, and read the cost before you confirm.</li>
+                <li>Go back and repay it.</li>
+              </ol>
+              <p class="note">It is a simulation. The steps are the real ones; the amounts, the fee and the dates are made up for the demo.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="behind">
+          <h2>Behind the app</h2>
+          <ul class="pairs">
+            <li><b>The backend</b>A Spring Boot service that runs onboarding, loan applications and repayments, for the app and the USSD menu alike.</li>
+            <li><b>The staff portal</b>Where staff review new customers and approve loans. I built that too.</li>
+            <li><b>Payments</b>Repayments go through M-Pesa: the borrower gets a prompt on their phone and approves it there.</li>
+            <li><b>Messages</b>Borrowers hear back by SMS and by notification in the app.</li>
+          </ul>
+        </section>
+
+        <section id="safeguards">
+          <h2>It is people's money, so security came first</h2>
+          <p class="lead">Four of these ship in the release build of the app. The rest are how the platform behaves.</p>
+          <ul class="pairs">
+            <li><b>Device binding</b>Sign-in is tied to the enrolled phone. A stolen PIN alone is not enough.</li>
+            <li><b>Certificate pinning</b>The app only talks to the genuine server.</li>
+            <li><b>App attestation</b>The server can tell a genuine app from a tampered one.</li>
+            <li><b>Screen protection</b>Sensitive screens cannot be screenshotted or recorded.</li>
+            <li><b>Clean-up</b>ID and selfie photos leave the phone once they are uploaded.</li>
+            <li><b>No double loans</b>A retry on a weak network never creates a second application.</li>
+          </ul>
+        </section>
+
+        <section id="running">
+          <h2>I can see it all running</h2>
+          <p class="lead">A system you cannot see is a system you cannot fix.</p>
+          <p>Logs, metrics and alerts for the platform are deployed and in use, on Grafana, Loki and Prometheus. When something slows down or fails, it shows up on a dashboard.</p>
+          <ul class="tags"><li>Grafana</li><li>Loki</li><li>Prometheus</li></ul>
+        </section>
+
+        <section id="now">
+          <h2>Where it stands</h2>
+          <p class="lead">The build closed in early August 2026. It has over 130 active users and is in final testing for the Play Store.</p>
+          <ul class="tags"><li>Flutter</li><li>Dart</li><li>Java</li><li>Spring Boot</li><li>PostgreSQL</li><li>Next.js</li><li>M-Pesa</li><li>USSD</li></ul>
+          {/* TODO(Cecil): one paragraph, in your words, on what leading this taught you. */}
+        </section>
+
+        <div class="next">
+          <a class="btn" href="/">Back to the street</a>
+          <a class="btn ghost" href="/work">Everything in plain text</a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <div class="iris opening" id="iris"></div>
+  <script>
+    import { initMusoni } from '../scripts/musoni.js';
+    initMusoni();
+  </script>
+</Night>

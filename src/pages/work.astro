@@ -1,0 +1,58 @@
+---
+// Everything in plain text, for visitors who skip the street. Built from src/content/story.ts.
+import Night from '../layouts/Night.astro';
+import { chapters, contact, person } from '../content/story';
+
+const NEON: Record<string, string> = { egerton: '#7dff9a', podii: '#c79bff', giktek: '#5fe1ff', musoni: '#ff9a5c', lexims: '#ffe066', contact: '#ff6b8b' };
+const PAGES: Record<string, string> = { musoni: '/musoni' };
+const places = chapters.filter((c) => c.id !== 'hero' && c.id !== 'contact').reverse();
+---
+
+<Night title={`Work: ${person.name}`} description={`The work of ${person.name}, ${person.title}: every job and project in plain text.`}>
+  <header class="bar">
+    <a class="chip" href="/">Back to the street</a>
+    <span class="sp"></span>
+    <a class="chip" href={`mailto:${contact.email}`}>{contact.email}</a>
+  </header>
+  <main class="page plain">
+    <h1>{person.name}</h1>
+    <p class="lead">{person.title}, {person.location}. {person.line}</p>
+    <ul class="tags">
+      {places.map((c) => <li><a href={`#${c.id}`} style={`color:${NEON[c.id]}`}>{c.title}</a></li>)}
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+
+    {places.map((c) => (
+      <section class="place" id={c.id} style={`--accent:${NEON[c.id]}`}>
+        <h2>{c.title}</h2>
+        <p class="when">{c.period}</p>
+        <p>{c.intro}</p>
+        {c.beats.map((b) => {
+          const k = b.block;
+          if (!k) return null;
+          if (k.kind === 'card') return (<><h3>{k.title}</h3><p>{k.meta}</p>{k.lines?.map((l) => <p>{l}</p>)}</>);
+          if (k.kind === 'list') return (<><h3>{k.title}</h3><ul>{k.items.map((i) => <li>{i}</li>)}</ul></>);
+          if (k.kind === 'stations') return (<><h3>What I did there</h3><dl class="rows">{k.rows.map((r) => (<><dt>{r.name}</dt><dd>{r.did}<small>{r.tools}</small></dd></>))}</dl></>);
+          if (k.kind === 'safeguards') return (<><h3>{c.id === 'lexims' ? 'Guardrails on the intelligence layer' : 'Safeguards'}</h3><dl class="rows">{k.items.map((r) => (<><dt>{r.name}</dt><dd>{r.text}</dd></>))}</dl></>);
+          if (k.kind === 'jobs') return (<><h3>What the intelligence layer does</h3><dl class="rows">{k.rows.map((r) => (<><dt>{r.name}</dt><dd>{r.example}</dd></>))}</dl></>);
+          if (k.kind === 'ussd') return (<><h3>{k.title}</h3><p>For borrowers without a smartphone: dial, enter a PIN, apply, check a balance, repay.</p></>);
+          if (k.kind === 'phones') return (<><h3>{k.title}</h3><ul>{k.shots.map((s) => <li>{s.label}</li>)}</ul></>);
+          if (k.kind === 'stats') return (<><h3>In numbers</h3><ul>{k.items.map((s) => <li>{s.value} {s.label}{s.estimate ? ' (estimate)' : ''}</li>)}</ul></>);
+          return null;
+        })}
+        {PAGES[c.id] && <p style="margin-top:28px"><a class="btn" href={PAGES[c.id]}>Open the full {c.title.replace('The ', '')} page</a></p>}
+      </section>
+    ))}
+
+    <section class="place" id="contact" style={`--accent:${NEON.contact}`}>
+      <h2>Contact</h2>
+      <p class="when">{person.location}</p>
+      <dl class="rows">
+        <dt>Email</dt><dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd>
+        {contact.phone && (<><dt>Phone</dt><dd>{contact.phone}</dd></>)}
+        <dt>LinkedIn</dt><dd><a href={contact.linkedin}>{contact.linkedin.replace('https://www.', '')}</a></dd>
+        {contact.github.map((g) => (<><dt>GitHub ({g.label.toLowerCase()})</dt><dd><a href={g.url}>{g.url.replace('https://', '')}</a></dd></>))}
+      </dl>
+    </section>
+  </main>
+</Night>

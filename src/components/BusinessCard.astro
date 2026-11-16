@@ -1,0 +1,81 @@
+---
+import QRCode from 'qrcode';
+import { contact, person } from '../content/story';
+import { vcard } from '../content/vcard';
+
+const qr = await QRCode.toString(vcard(), { type: 'svg', margin: 0, color: { dark: '#17181c', light: '#0000' } });
+const handle = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '');
+---
+
+<div class="bizcard">
+  <button class="card3d" id="bizcard" type="button" aria-pressed="false" aria-label="Business card. Press to flip it over.">
+    <span class="face front">
+      <span>
+        <strong>{person.name}</strong>
+        <em>{person.title}</em>
+        <small>{person.location}</small>
+      </span>
+      <span class="portrait"></span>
+    </span>
+    <span class="face back">
+      <span>
+        <b>{person.name}</b><br />
+        {contact.email}<br />
+        {contact.phone && <>{contact.phone}<br /></>}
+        {handle(contact.linkedin)}<br />
+        {handle(contact.github[0].url)}
+      </span>
+      <Fragment set:html={qr} />
+    </span>
+  </button>
+
+  <div class="card-actions">
+    <a class="btn" id="save-contact" href="/cecil-lwala.vcf" download="Cecil-Lwala.vcf">Save contact</a>
+    <button class="btn" id="copy-email" type="button" data-email={contact.email}>Copy email</button>
+    {contact.cvReady && <a class="btn" href={contact.cv} download>Download CV</a>}
+  </div>
+  <p class="card-status" role="status" id="card-status"></p>
+
+  <ul class="card-links">
+    <li><a href={`mailto:${contact.email}`}>{contact.email}</a></li>
+    {contact.phone && <li><a href={`tel:${contact.phone.replace(/\s+/g, '')}`}>{contact.phone}</a></li>}
+    <li><a href={contact.linkedin}>LinkedIn</a></li>
+    {contact.github.map((g) => <li><a href={g.url}>GitHub ({g.label.toLowerCase()})</a></li>)}
+  </ul>
+</div>
+
+<script>
+  const card = document.getElementById('bizcard')!;
+  const status = document.getElementById('card-status')!;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  card.addEventListener('click', () => {
+    card.setAttribute('aria-pressed', String(card.getAttribute('aria-pressed') !== 'true'));
+  });
+  // The card leans a little towards the pointer.
+  if (!still) {
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--ty', `${((e.clientX - r.left) / r.width - 0.5) * 16}deg`);
+      card.style.setProperty('--tx', `${(0.5 - (e.clientY - r.top) / r.height) * 12}deg`);
+    });
+    card.addEventListener('pointerleave', () => {
+      card.style.setProperty('--ty', '0deg');
+      card.style.setProperty('--tx', '0deg');
+    });
+  }
+
+  document.getElementById('copy-email')!.addEventListener('click', async (e) => {
+    const email = (e.currentTarget as HTMLElement).dataset.email!;
+    try {
+      await navigator.clipboard.writeText(email);
+      status.textContent = 'Copied. Talk soon.';
+    } catch {
+      status.textContent = email;
+    }
+  });
+  document.getElementById('save-contact')!.addEventListener('click', () => {
+    status.textContent = 'Saved. Thank you!';
+    window.dispatchEvent(new CustomEvent('cecil:celebrate'));
+  });
+</script>

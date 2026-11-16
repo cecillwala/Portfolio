@@ -1,0 +1,27 @@
+---
+import '@fontsource/jersey-15/latin-400.css';
+import '@fontsource-variable/figtree';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  theme?: string;
+}
+const { title, description, theme = 'hero' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preload" as="image" href="/sprites/cecil.png" />
+  </head>
+  <body data-theme={theme}>
+    <slot />
+  </body>
+</html>

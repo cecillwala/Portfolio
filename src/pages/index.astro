@@ -1,0 +1,38 @@
+---
+// Home: the street. The scene is drawn by src/scripts/street.js.
+import Night from '../layouts/Night.astro';
+import { person } from '../content/story';
+---
+
+<Night title={`${person.name}, ${person.title}`} description={person.line}>
+  <main class="home">
+    <div class="stage" id="stage">
+      <div class="view" id="view">
+      <canvas
+        id="street"
+        role="img"
+        aria-label="A pixel-art street in Nairobi at night. Six buildings with neon signs: Egerton, Podii, GikTek, Musoni, LexIMS and a post office. Pixel Cecil stands on the pavement."
+      ></canvas>
+      <div class="bubble off" id="bubble" aria-live="polite">
+        <span class="typed"></span><span class="rest"></span>
+        <div class="chips"></div>
+      </div>
+      </div>
+      <div class="hud">
+        <h1 class="chip name" style="margin:0;font-weight:400">{person.name}</h1>
+        <span class="role">{person.title}, {person.location}</span>
+        <span class="sp"></span>
+        <span class="chip" id="clock">Nairobi</span>
+        <button class="chip" id="snd" type="button" aria-pressed="false">Sound: off</button>
+        <a class="chip" href="/work">Skip to the work</a>
+      </div>
+      <p class="hint" id="hint" style="margin:0">Click a building, or walk with the arrow keys. Enter goes in.</p>
+      <nav class="sr" aria-label="Places on the street" id="places"></nav>
+    </div>
+  </main>
+  <div class="iris" id="iris"></div>
+  <script>
+    import { initStreet } from '../scripts/street.js';
+    initStreet();
+  </script>
+</Night>
