@@ -1,0 +1,74 @@
+---
+import Night from '../layouts/Night.astro';
+import { buildings } from '../content/buildings.js';
+import '../styles/building.css';
+export function getStaticPaths() {
+  return Object.entries(buildings).map(([slug, building]) => ({ params: { building: slug }, props: { building, slug } }));
+}
+const { building, slug } = Astro.props;
+const floors = building.floors;
+---
+<Night title={`${building.title} · Cecil Lwala`} description={building.intro} accent={building.accent}>
+  <header class="building-bar">
+    <a href={`/?from=${slug}`}>← Back to the street</a>
+    <span class="building-bar__name">Cecil’s career / {building.title}</span>
+    <button class="chip" id="snd" type="button" aria-pressed="false">Sound: off</button>
+  </header>
+  <noscript><p class="page">The lift needs JavaScript. <a href="/work">Read the full portfolio here.</a></p></noscript>
+  <main class="career-building" data-building={slug}>
+    <header class="building-heading">
+      <span class="building-eyebrow">You’re inside</span>
+      <h1>{building.title}<span>.</span></h1>
+      <p>{building.intro}</p>
+    </header>
+    <div class="building-layout">
+      <section class="building-cutaway" aria-label={`${building.title} floor directory`}>
+        <div class="building-roof"><span>{building.title}</span><small>Latest upstairs ↑</small></div>
+        <div class="building-shaft" aria-hidden="true"><span>LIFT</span><div id="building-lift" class="building-lift"><span class="building-cecil"></span></div></div>
+        <div class="building-floors">
+          {[...floors].reverse().map((floor) => {
+            const index = floors.findIndex(f => f.id === floor.id);
+            return (
+              <button class:list={['building-floor', { 'is-construction': floor.construction }]} id={`floor-${floor.id}`} data-floor={floor.id} type="button" aria-pressed={index === 0 ? 'true' : 'false'} aria-controls={`story-${floor.id}`} style={`--floor-color:${floor.color}`}>
+                <canvas class="floor-scene" width="480" height="176" data-construction={floor.construction ? 'true' : 'false'} aria-hidden="true"></canvas>
+                <span class="floor-number">{String(index+1).padStart(2,'0')}<small>FLOOR</small></span>
+                <span class="floor-brand">
+                  {floor.logo ? <img src={floor.logo} alt="" /> : <span class="floor-monogram" aria-hidden="true">{floor.mark}</span>}
+                  <span><strong>{floor.name}</strong><small>{floor.status}</small></span>
+                </span>
+                <span class="floor-enter">Visit floor <span aria-hidden="true">↗</span></span>
+                {floor.construction && <span class="construction-label">Work in progress · Mind the hard hats</span>}
+              </button>
+            );
+          })}
+        </div>
+        <div class="building-lobby"><span>GROUND / RECEPTION</span><small>Earliest work starts on Floor 01</small></div>
+      </section>
+      <aside class="floor-conversations" aria-label="About the selected floor">
+        <p class="floor-guidance">Select a floor. Cecil will take the lift.</p>
+        {floors.map((floor,index) => (
+          <section class="floor-story" id={`story-${floor.id}`} data-story={floor.id} style={`--floor-color:${floor.color}`} hidden={index !== 0} aria-labelledby={`title-${floor.id}`}>
+            <span class="building-eyebrow">Floor {String(index+1).padStart(2,'0')} / {floor.category}</span>
+            <h2 id={`title-${floor.id}`} tabindex="-1">{floor.name}</h2>
+            <p class="floor-period">{floor.period}</p>
+            <span class="floor-status">{floor.status}</span>
+            <p class="floor-role">{floor.role}</p>
+            <p>{floor.summary}</p>
+            <ul>{floor.points.map(point => <li>{point}</li>)}</ul>
+            <div class="floor-tags">{floor.tags.map(tag => <span>{tag}</span>)}</div>
+            {floor.href && <a class="floor-action" href={floor.href}>{floor.action} →</a>}
+            {floor.construction && <p class="floor-site-note">This floor is still being built. The crew above is a little preview of the work in progress.</p>}
+          </section>
+        ))}
+        {slug === 'projects' && <p class="freelance-note">Professional and freelance work share this building. New freelance floors will be added as the case studies are ready.</p>}
+        <p class="building-keyboard">Tip: Tab to a floor and press Enter. ↑ / ↓ moves between floors.</p>
+      </aside>
+    </div>
+    <p class="lift-status sr" id="lift-status" role="status">Floor 01 selected</p>
+  </main>
+  <div class="iris opening" aria-hidden="true"></div>
+  <script>
+    import { initBuilding } from '../scripts/building.js';
+    initBuilding();
+  </script>
+</Night>

@@ -77,7 +77,9 @@ export function drawCecil(c, img, frame, x, feetY, flip = false) {
   c.save();
   c.translate(Math.round(x), Math.round(feetY) - 35);
   if (flip) c.scale(-1, 1);
-  c.drawImage(img, frame * SPRITE.w, 0, SPRITE.w, SPRITE.h, -15, 0, SPRITE.w, SPRITE.h);
+  const sw = img.naturalWidth === 480 ? 48 : SPRITE.w;
+  const sh = img.naturalWidth === 480 ? 64 : SPRITE.h;
+  c.drawImage(img, frame * sw, 0, sw, sh, -15, 0, SPRITE.w, SPRITE.h);
   c.restore();
 }
 

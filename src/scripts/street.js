@@ -1,24 +1,27 @@
 // The home page: a street in Nairobi at night. Everything is drawn here, in code.
 // The view is 426x240 art pixels; the street is wider and the camera follows Cecil.
-import { still, rng, dth, layer, R, mix, shade, textW, neon, loadCecil, drawCecil, SPRITE, blip, chime, step, door, soundButton } from './pixel.js';
+import { buildings } from '../content/buildings.js';
+import { drawConstruction } from './construction.js';
+import { still, rng, dth, layer, R, mix, shade, textW, neon, SPRITE, blip, chime, step, door, soundButton } from './pixel.js';
 
 const VW = 426, H = 240, GY = 200, W = 704, PAD = 14;
 const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 
 /** The places on the street. href: the page behind the door, or null while it is being built. */
 const P = [
-  { id: 'EGERTON', title: 'Egerton University', category: 'Education · 2022–2026', status: 'Graduating 27 November 2026', x: 20, w: 104, h: 88, neon: '#7dff9a', kind: 'hall', href: null, say: 'Egerton University. Computer Science, 2022 to 2026. I graduate on 27 November.' },
-  { id: 'PODII', title: 'Podii Consultants', category: 'Experience · 2024', status: 'Technical intern · Six months', x: 142, w: 64, h: 104, neon: '#c79bff', kind: 'office', href: null, say: 'Podii Consultants. My first desk: six months as a technical intern in 2024.' },
-  { id: 'GIKTEK', title: 'GikTek', category: 'Experience', status: 'Spring Boot · Angular · Kubernetes', x: 228, w: 104, h: 132, neon: '#5fe1ff', kind: 'tower', href: null, say: 'GikTek. Spring Boot, Angular, Kubernetes, and the dashboards that watch them.' },
-  { id: 'MUSONI', title: 'Musoni', category: 'Featured project', status: 'In testing · Over 130 active users', x: 356, w: 98, h: 104, neon: '#ff9a5c', kind: 'shop', href: '/musoni', say: 'Musoni. The loan app I led: Flutter app, backend, staff portal and USSD.' },
-  { id: 'LEXIMS', title: 'LexIMS', category: 'Project · In development', status: 'Integrated Management System', x: 478, w: 96, h: 126, neon: '#ffe066', kind: 'archive', href: null, say: 'An Integrated Management System for projects, compliance, audits and continual improvement.' },
-  { id: 'POST', title: 'Let’s connect', category: 'The post office', status: '', x: 602, w: 76, h: 62, neon: '#ff6b8b', kind: 'post', href: null, say: 'Find my details and links on the work page. I’m a software developer based in Nairobi.' },
+  { id:'PROJECTS', slug:'projects', title:'Projects', category:'Projects · a floor for every story', status:'Musoni · LexIMS', x:24,w:158,h:150,neon:'#ffb577',kind:'projects',href:'/projects',say:'Every project has its own floor. Start with Musoni downstairs; LexIMS is still under construction upstairs.' },
+  { id:'WORK',slug:'experience',title:'Work Experience',category:'Career · the teams I’ve worked with',status:'Podii → GikTek',x:218,w:154,h:133,neon:'#7bd9ce',kind:'office',href:'/experience',say:'The teams that shaped how I build. Come inside: Podii is the first floor, GikTek is above it.' },
+  { id:'EDUCATION',slug:'education',title:'Education',category:'Education · the foundations',status:'Egerton University',x:414,w:140,h:112,neon:'#7dff9a',kind:'hall',href:'/education',say:'Where the foundations were laid. Visit my Computer Science years at Egerton University.' },
+  { id:'POST',slug:'contact',title:'Let’s connect',category:'The post office',status:'',x:602,w:76,h:62,neon:'#ff6b8b',kind:'post',href:null,say:'The post office. Have a project or a role in mind? Let’s talk.' },
 ];
 const BODY = '#12163a', HI = '#262d62', LO = '#0a0d26', TRIM = '#2e3670';
 
 export async function initStreet(onProgress = () => {}) {
   // Keep the loading screen up until the page, typeface and character are ready.
-  const sheet = loadCecil();
+  const crew = new Image(); crew.src = base + '/sprites/cecil-worker.png';
+  await crew.decode();
+  const sheet = new Image();
+  sheet.src = base + '/sprites/cecil-town.png';
   // Three asset milestones plus the first complete scene frame. These are readiness
   // percentages, rather than an estimate of downloaded bytes.
   let ready = 0;
@@ -30,12 +33,25 @@ export async function initStreet(onProgress = () => {}) {
       window.addEventListener('load', resolve, { once: true });
     })),
   ]);
+  const floorLogos = new Map();
+  await Promise.all(buildings.projects.floors.filter(f => f.logo).map(async floor => {
+    const logo = new Image(); logo.src = floor.logo;
+    try { await logo.decode(); floorLogos.set(floor.id,logo); } catch { /* Use the initial mark if a logo is unavailable. */ }
+  }));
   const stage = document.getElementById('stage'), cv = document.getElementById('street');
   cv.width = VW; cv.height = H;
   const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
   // Cover the viewport with the fixed-ratio art. Tall screens crop the sides; wide screens can
   // crop the sky. Align the art to the bottom so the pavement stays in frame.
   const view = document.getElementById('view');
+  // Keep Cecil out of the street's low-resolution canvas. Native frames, enlarged by
+  // whole CSS pixels, preserve equal eyes and all the face detail on every screen.
+  const trafficCanvas = document.getElementById('street-traffic');
+  const trafficContext = trafficCanvas.getContext('2d');
+  trafficContext.imageSmoothingEnabled = false;
+  const characterCanvas = document.getElementById('street-character');
+  const characterContext = characterCanvas.getContext('2d');
+  characterContext.imageSmoothingEnabled = false;
   let visW = VW;
   function fit() {
     const w = stage.clientWidth, h = stage.clientHeight;
@@ -163,14 +179,31 @@ export async function initStreet(onProgress = () => {}) {
       b.shop = { x: b.x + 9, y: GY - 39, w: b.w - 48, h: 28 };
     }
     const y0 = top + (b.kind === 'archive' ? 30 : 26), y1 = GY - (b.kind === 'shop' ? 72 : 58);
-    for (let y = y0; y <= y1; y += 14) for (let x = b.x + 9; x <= b.x + b.w - 16; x += 12) {
+    for (let y = y0; b.kind !== 'projects' && y <= y1; y += 14) for (let x = b.x + 9; x <= b.x + b.w - 16; x += 12) {
       R(ne, '#090c22', x, y, 7, 9); R(ne, '#1a2156', x, y, 7, 1); R(ne, '#1a2156', x, y, 1, 9);
       wins.push({ x, y, w: 7, h: 9, on: wr() < 0.5, col: ['#ffd27a', '#ffd27a', '#ffb454', '#ffe6a6'][Math.floor(wr() * 4)], tv: wr() < 0.07 });
     }
     R(ne, TRIM, b.door - 2, GY - 35, 22, 35); R(ne, '#3c4688', b.door - 2, GY - 35, 22, 1); R(ne, '#3c4688', b.door - 3, GY - 1, 24, 1);
-    b.signW = textW(b.id, 2); b.signX = b.x + ((b.w - b.signW) >> 1); b.signY = top + 9;
+    b.signText = b.id === 'WORK' ? 'EXPERIENCE' : b.id;
+    b.signW = textW(b.signText, 2); b.signX = b.x + ((b.w - b.signW) >> 1); b.signY = top + 9;
     R(ne, '#080a1e', b.signX - 4, b.signY - 3, b.signW + 8, 16);
     shade(ne, mix(b.neon, BODY, 0.45), b.signX - 6, b.signY + 13, b.signX + b.signW + 6, b.signY + 21, (x, y) => 0.45 * (1 - (y - b.signY - 13) / 8));
+    if(b.kind === 'projects') {
+      b.floorRects = buildings.projects.floors.map((floor,index)=>({floor,x:b.x+8,y:GY-77-index*43,w:b.w-16,h:35}));
+      for(const room of b.floorRects) {
+        R(ne,'#0c1630',room.x,room.y,room.w,room.h);
+        R(ne,room.floor.color,room.x,room.y+room.h-2,room.w,2);
+        if(!room.floor.construction)for(let wx=room.x+8;wx<room.x+room.w-8;wx+=20){
+          R(ne,'#b18a61',wx,room.y+18,12,13);R(ne,'#f0cc8b',wx+1,room.y+19,10,11);R(ne,'#26334c',wx+5,room.y+19,1,11);
+        }
+      }
+      // A crane above the live top floor makes the unfinished silhouette visible.
+      R(ne,'#c2a65a',b.x+b.w-20,top-26,2,85);
+      R(ne,'#c2a65a',b.x+60,top-26,b.w-65,2);
+      R(ne,'#65728d',b.x+86,top-24,1,22);
+      R(ne,'#e0b965',b.x+82,top-3,8,3);
+    }
+
   }
 
   // ---------- pavement, road, lamps ----------
@@ -194,16 +227,19 @@ export async function initStreet(onProgress = () => {}) {
 
   function matatu(c, x, y) {
     x = Math.round(x);
-    shade(c, '#fff3c4', x - 46, y + 2, x + 2, y + 16, (px, py) => { const t = (x - px) / 46; return Math.abs(py - (y + 10)) < 2 + t * 6 ? 0.4 * (1 - t) : 0; });
+    c.save();
+    c.beginPath();c.moveTo(x+1,y+8);c.lineTo(x-42,y+3);c.lineTo(x-42,y+16);c.lineTo(x+1,y+11);c.closePath();
+    const beam=c.createLinearGradient(x-42,0,x+2,0);beam.addColorStop(0,'#ffe9a800');beam.addColorStop(1,'#ffe9a850');c.fillStyle=beam;c.fill();c.restore();
     R(c, '#f4efd8', x + 2, y, 34, 12); R(c, '#f4efd8', x, y + 4, 4, 8); R(c, '#d9d2b4', x + 2, y + 11, 34, 1);
     R(c, '#ff6b8b', x, y + 7, 36, 2); R(c, '#5fe1ff', x + 6, y + 9, 26, 1); R(c, '#ffe066', x + 20, y - 1, 12, 1);
-    R(c, '#1a2156', x + 2, y + 2, 5, 4); for (let i = 0; i < 4; i++) R(c, i === 1 ? '#ffd27a' : '#1a2156', x + 9 + i * 6, y + 2, 5, 4);
-    R(c, '#fff3c4', x, y + 9, 2, 2); R(c, '#ff3b4f', x + 35, y + 8, 1, 3);
+    R(c, '#1a2156', x + 2, y + 2, 5, 4); for (let i = 0; i < 4; i++) { R(c, '#514a45', x + 9 + i * 6, y + 2, 5, 4); R(c, '#ffe2a0', x + 9 + i * 6, y + 2, 5, 1); R(c, '#9c825d', x + 9 + i * 6, y + 3, 1, 3); }
+    R(c, '#ffe8b7', x+2, y+1, 31, 1); R(c, '#7de9f1', x+3, y+9, 30, 1); for(let lx=3;lx<34;lx+=3)R(c,'#ffb978',x+lx,y+10,1,1); R(c, '#fff3c4', x, y + 9, 3, 2); R(c, '#ff3b4f', x + 35, y + 8, 1, 3);
     for (const wx of [6, 26]) { R(c, '#05060f', x + wx, y + 10, 6, 5); R(c, '#05060f', x + wx - 1, y + 11, 8, 3); R(c, '#8e96c9', x + wx + 2, y + 12, 2, 1); }
   }
 
   // ---------- Cecil and the readable information panel ----------
-  const C = { x: 312, tx: 312, dir: 1, key: 0, mode: 'idle', at: null, goal: null, waveUntil: 0, step: 0 };
+  const startPlace = P.find(p => p.slug === new URLSearchParams(location.search).get('from')) || P[0];
+  const C = { x: startPlace.doorX, tx: startPlace.doorX, dir: 1, key: 0, mode: 'idle', at: null, goal: null, waveUntil: 0, step: 0 };
   const panel = document.getElementById('place-card');
   const panelTitle = document.getElementById('place-title');
   const panelActions = panel.querySelector('.place-card__actions');
@@ -240,22 +276,51 @@ export async function initStreet(onProgress = () => {}) {
   }
   panel.querySelector('.place-card__close').addEventListener('click', () => closePanel(true));
   const hint = document.getElementById('hint');
+  const locationStatus = document.getElementById('street-location');
+  const help = document.getElementById('street-help');
+  const helpOpen = document.getElementById('street-help-open');
+  function closeHelp(restoreFocus = false) {
+    help.hidden = true;
+    helpOpen.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) helpOpen.focus();
+  }
+  function openHelp() {
+    closePanel();
+    C.key = 0; C.tx = C.x; C.goal = null; C.at = null; C.mode = 'idle';
+    focusOnArrival = false;
+    locationStatus.textContent = 'Choose a destination below to start exploring';
+    help.hidden = false;
+    helpOpen.setAttribute('aria-expanded', 'true');
+    document.getElementById('street-help-title').focus({ preventScroll: true });
+  }
+  helpOpen.addEventListener('click', () => help.hidden ? openHelp() : closeHelp(true));
+  document.getElementById('street-help-close').addEventListener('click', () => closeHelp(true));
+  document.getElementById('street-help-start').addEventListener('click', () => { closeHelp(); document.querySelector('#places button')?.focus(); });
   let cam = Math.max(0, Math.min(W - VW, C.x - VW / 2));
   let busX = W + 60, planeX = 90, hover = null, mx = 0, mxS = 0, lastAct = performance.now(), leaving = false;
 
   const chip = (label, fn, primary = false) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (primary) b.className = 'primary'; b.addEventListener('click', (e) => { e.stopPropagation(); fn(); }); return b; };
-  const link = (label, href) => { const a = document.createElement('a'); a.textContent = label; a.href = base + href; return a; };
+  const link = (label, href) => { const a = document.createElement('a'); a.textContent = label; a.href = /^(https?:|mailto:)/.test(href) ? href : base + href; return a; };
   const pick = (id) => P.find((p) => p.id === id);
 
-  function go(b) { focusOnArrival = panel.contains(document.activeElement) || !!document.activeElement?.closest('#places'); C.tx = b.doorX; C.at = null; C.goal = b; C.mode = 'walk'; closePanel(true); blip(660, 0.04); lastAct = performance.now(); hint.hidden = true; }
+  function go(b) { closeHelp(); setMode(false); locationStatus.textContent = 'Walking to ' + b.title + '…'; document.querySelectorAll('#places button').forEach(el => el.removeAttribute('aria-current')); focusOnArrival = panel.contains(document.activeElement) || !!document.activeElement?.closest('#places'); C.tx = b.doorX; C.at = null; C.goal = b; C.mode = 'walk'; closePanel(true); blip(660, 0.04); lastAct = performance.now(); hint.hidden = true; }
   function arrive(b) {
     C.at = b; chime();
+    locationStatus.textContent = b.title + (b.href ? ' · Choose “Go inside” to enter' : ' · Follow the conversation above');
+    document.querySelectorAll('#places button').forEach(el => {
+      if (el.dataset.place === b.id) el.setAttribute('aria-current', 'location');
+      else el.removeAttribute('aria-current');
+    });
     const actions = b.href
-      ? [chip('Explore ' + b.title + ' →', () => enter(b), true)]
-      : [link(b.id === 'POST' ? 'View contact details →' : 'Read more on my work →', '/work#' + ({ EGERTON: 'egerton', PODII: 'podii', GIKTEK: 'giktek', LEXIMS: 'lexims', POST: 'contact' }[b.id]))];
-    actions[0].classList.add('primary');
+      ? [chip('Go inside ' + b.title + ' →', () => enter(b), true)]
+      : [chip(b.id === 'POST' ? 'Show my contacts' : 'Tell me more', () => details(b), true)];
     showPanel(b.title, b.say, b.category, actions, b.status, b.neon);
   }
+  function details(b) {
+    focusOnArrival = panel.contains(document.activeElement);
+    showPanel('Let’s connect', 'I’m based in Nairobi. Have a project, a role to discuss, or an idea to build together? You can reach me directly below.', b.category, [link('Email Cecil','mailto:lwalacecil13@gmail.com'), link('LinkedIn ↗','https://www.linkedin.com/in/cecillwala')], '', b.neon);
+  }
+
   function enter(b) {
     if (leaving || !b.href) return;
     leaving = true; door();
@@ -267,38 +332,59 @@ export async function initStreet(onProgress = () => {}) {
     setTimeout(() => { location.href = base + b.href; }, still ? 0 : 620);
   }
   function greet() {
-    showPanel('Karibu. I’m Cecil.', 'A software developer in Nairobi. This street is my career so far. Choose a building to explore my work.', 'Meet your guide', [
-      chip('Explore Musoni →', () => go(pick('MUSONI')), true),
-      link('Browse all work', '/work'),
+    showPanel('Karibu. I’m Cecil.', 'A software developer in Nairobi. Each building holds a part of my career. Choose Projects, Work Experience or Education, and come inside.', 'Meet your guide', [
+      chip('Start with Projects →', () => go(pick('PROJECTS')), true),
+      chip('How to explore', openHelp),
     ]);
   }
 
   const toArt = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * VW + cam, (e.clientY - r.top) / r.height * H]; };
   const placeAt = (x, y) => P.find((b) => x >= b.x - 2 && x <= b.x + b.w + 2 && y >= b.top - 46 && y <= GY + 8) || null;
   const onCecil = (x, y) => Math.abs(x - C.x) < 14 && y > GY - 26 && y < GY + 14;
-  cv.addEventListener('pointermove', (e) => { const [x, y] = toArt(e); hover = placeAt(x, y); mx = ((x - cam) / VW) * 2 - 1; cv.style.cursor = hover || onCecil(x, y) ? 'pointer' : 'default'; });
+  cv.addEventListener('pointermove', (e) => { if (stage.classList.contains('street-wallpaper') || !help.hidden) { hover = null; cv.style.cursor = 'default'; return; } const [x, y] = toArt(e); hover = placeAt(x, y); mx = ((x - cam) / VW) * 2 - 1; cv.style.cursor = hover || onCecil(x, y) ? 'pointer' : 'default'; });
   cv.addEventListener('pointerleave', () => { hover = null; mx = 0; });
   cv.addEventListener('click', (e) => {
     const [x, y] = toArt(e), b = placeAt(x, y);
+    if (stage.classList.contains('street-wallpaper') || !help.hidden) return;
     lastAct = performance.now();
     if (onCecil(x, y)) { C.waveUntil = performance.now() + 1800; blip(880, 0.06, 'square', 0.03, 1320); greet(); return; }
     if (b) { if (C.at === b && b.href) enter(b); else go(b); }
   });
   addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closePanel(true); return; }
+    if (e.key === 'Escape') { if (!help.hidden) closeHelp(true); else closePanel(true); setMode(false); return; }
+    if (!help.hidden || stage.classList.contains('street-wallpaper')) return;
     if (e.target instanceof HTMLElement && (e.target.closest('button, a') && e.key === 'Enter' || e.target.closest('#place-card') && e.key.startsWith('Arrow'))) return;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { C.key = e.key === 'ArrowLeft' ? -1 : 1; C.goal = null; C.at = null; C.mode = 'walk'; closePanel(); hint.hidden = true; lastAct = performance.now(); e.preventDefault(); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { locationStatus.textContent = 'Exploring · Stop at a lit doorway, or choose a destination below'; document.querySelectorAll('#places button').forEach(el => el.removeAttribute('aria-current')); C.key = e.key === 'ArrowLeft' ? -1 : 1; C.goal = null; C.at = null; C.mode = 'walk'; closePanel(); hint.hidden = true; lastAct = performance.now(); e.preventDefault(); }
     if (e.key === 'Enter' && C.at && C.at.href) enter(C.at);
   });
-  addEventListener('keyup', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { C.key = 0; C.tx = C.x; } });
+  addEventListener('blur', () => { C.key = 0; if (!C.goal) C.tx = C.x; });
+  addEventListener('keyup', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { locationStatus.textContent = 'Exploring · Stop at a lit doorway, or choose a destination below'; document.querySelectorAll('#places button').forEach(el => el.removeAttribute('aria-current')); C.key = 0; C.tx = C.x; } });
   const nav = document.getElementById('places');
-  P.forEach((b) => nav.appendChild(chip('Walk to ' + b.id[0] + b.id.slice(1).toLowerCase(), () => go(b))));
+  const categories = { PROJECTS:'Project floors', WORK:'Career floors', EDUCATION:'University', POST:'Say hello' };
+  P.forEach(b => {
+    const button = chip('', () => go(b));
+    button.dataset.place = b.id;
+    const name = document.createElement('span'); name.textContent = b.id === 'POST' ? 'Contact' : b.id === 'WORK' ? 'Experience' : b.title;
+    const category = document.createElement('small'); category.textContent = categories[b.id];
+    button.append(name, category); nav.append(button);
+  });
+  const wallpaper = document.getElementById('street-wallpaper');
+  const explore = document.getElementById('street-explore');
+  function setMode(wallpaperMode) {
+    stage.classList.toggle('street-wallpaper', wallpaperMode);
+    wallpaper.setAttribute('aria-pressed', String(wallpaperMode));
+    explore.setAttribute('aria-pressed', String(!wallpaperMode));
+    if (wallpaperMode) { closePanel(); closeHelp(); hover = null; C.key = 0; C.tx = C.x; C.goal = null; C.at = null; C.mode = 'idle'; focusOnArrival = false; document.querySelectorAll('#places button').forEach(el => el.removeAttribute('aria-current')); locationStatus.textContent = 'Choose a destination below to start exploring'; }
+  }
+  wallpaper.addEventListener('click', () => setMode(true));
+  explore.addEventListener('click', () => setMode(false));
   soundButton(document.getElementById('snd'));
   const clock = document.getElementById('clock');
   const tick = () => { try { clock.textContent = 'Nairobi ' + new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Nairobi' }).format(new Date()); } catch { clock.textContent = 'Nairobi'; } };
   tick(); setInterval(tick, 20000);
 
   // ---------- frame ----------
+  let nextWaveAt = performance.now() + 8000 + Math.random() * 10000;
   let last = performance.now(), winAt = 0, flick = { b: null, i: -1, until: 0 }, stepAt = 0;
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000), t = now / 1000; last = now;
@@ -326,14 +412,25 @@ export async function initStreet(onProgress = () => {}) {
     }
     if (!still && now > flick.until + 2500 + Math.random() * 4000) { const b = P[Math.floor(Math.random() * P.length)]; flick = { b, i: Math.floor(Math.random() * b.id.length), until: now + 140 }; }
     for (const b of P) {
-      const hot = hover === b || C.at === b || C.goal === b;
+      const hot = !stage.classList.contains('street-wallpaper') && (hover === b || C.at === b || C.goal === b);
+      if (b.floorRects) {
+        for(const room of b.floorRects) {
+          if(room.floor.construction)drawConstruction(g,crew,room.x,room.y,room.w,room.h,t);
+          const f=room.floor;
+          R(g,'#111831',room.x+4,room.y+3,room.w-8,13);
+          const logo=floorLogos.get(f.id);
+          if(logo)g.drawImage(logo,room.x+7,room.y+5,9,9);
+          else { R(g,f.color,room.x+7,room.y+5,9,9); neon(g,f.mark,room.x+9,room.y+7,1,'#14172a'); }
+          neon(g,f.name.toUpperCase(),room.x+22,room.y+7,1,f.color);
+        }
+      }
       if (b.shop) {
         R(g, '#ffd27a', b.shop.x, b.shop.y, b.shop.w, b.shop.h); R(g, '#fff0b8', b.shop.x, b.shop.y, b.shop.w, 2); R(g, '#c98a4b', b.shop.x, b.shop.y + b.shop.h - 5, b.shop.w, 5);
         for (let x = b.shop.x + 12; x < b.shop.x + b.shop.w; x += 13) R(g, '#12163a', x, b.shop.y, 1, b.shop.h);
         R(g, '#12163a', b.shop.x + 6, b.shop.y + 12, 5, 11); R(g, '#12163a', b.shop.x + 20, b.shop.y + 9, 7, 14); R(g, '#12163a', b.shop.x + 34, b.shop.y + 13, 4, 10);
       }
       R(g, hot ? '#fff0b8' : '#ffc866', b.door, GY - 33, 18, 32); R(g, hot ? '#ffd27a' : '#d99a45', b.door, GY - 8, 18, 7); R(g, '#12163a', b.door + 8, GY - 33, 2, 32); R(g, '#12163a', b.door + 13, GY - 17, 2, 2);
-      neon(g, b.id, b.signX, b.signY, 2, b.neon, '#080a1e', flick.b === b && now < flick.until ? flick.i : -1, hot);
+      neon(g, b.signText, b.signX, b.signY, 2, b.neon, '#080a1e', flick.b === b && now < flick.until ? flick.i : -1, hot);
       if (hot) { g.strokeStyle = b.neon; g.lineWidth = 1; g.setLineDash([3, 3]); g.lineDashOffset = -Math.floor(t * 8); g.strokeRect(b.x - 3.5, b.top - 5.5, b.w + 7, b.h + 5); g.setLineDash([]); }
     }
     for (const b of blinks) if (b.layer === 'near' && Math.sin(t * 2.6 + b.ph) > 0) { R(g, '#ff3b4f', b.x - 1, b.y - 1, 3, 3); R(g, '#ffb0b8', b.x, b.y, 1, 1); }
@@ -350,15 +447,39 @@ export async function initStreet(onProgress = () => {}) {
       C.goal = null;
       if (b && C.at !== b) arrive(b);
     }
+    if (!still && !moving && help.hidden && !document.hidden && now > nextWaveAt) {
+      C.waveUntil = now + 1400;
+      nextWaveAt = now + 10000 + Math.random() * 12000;
+    }
     let f = SPRITE.idle;
-    if (moving) f = SPRITE.walk + C.step;
-    else if (now < C.waveUntil) f = SPRITE.wave;
+    if (moving) f = still ? SPRITE.walk : SPRITE.walk + C.step;
+    else if (!still && now < C.waveUntil) f = Math.floor(now / 240) % 2 ? SPRITE.wave : SPRITE.waveTalk;
     else f = Math.floor(t * 0.9) % 6 === 5 ? SPRITE.blink : SPRITE.idle;
     shade(g, '#0a0c22', C.x - 12, GY + 9, C.x + 12, GY + 15, (x, y) => (((x - C.x) / 11) ** 2 + ((y - GY - 12) / 2.6) ** 2 < 1 ? 0.6 : 0));
-    drawCecil(g, sheet, f, C.x, GY + 13, moving && C.dir < 0);
+    const screenScale = view.clientHeight / H;
+    const previousScale = Math.max(1, Math.round(37 * screenScale / 64));
+    // Half-step scaling keeps the 12-pixel eye spacing aligned and reduces Cecil
+    // by roughly a quarter on ordinary desktop and phone screens.
+    const characterScale = Math.max(1, Math.round(previousScale * .75 * 2) / 2);
+    characterCanvas.style.width = 48 * characterScale + 'px';
+    characterCanvas.style.height = 64 * characterScale + 'px';
+    characterCanvas.style.left = ((C.x - cr) * screenScale - 24 * characterScale) + 'px';
+    characterCanvas.style.top = ((GY + 13) * screenScale - 64 * characterScale) + 'px';
+    characterContext.clearRect(0, 0, 48, 64);
+    characterContext.save();
+    if (moving && C.dir < 0) { characterContext.translate(48, 0); characterContext.scale(-1, 1); }
+    characterContext.drawImage(sheet, f * 48, 0, 48, 64, 0, 0, 48, 64);
+    characterContext.restore();
 
     if (!still) { busX -= 52 * dt; if (busX < -520) busX = W + 80; }
-    matatu(g, busX, GY + 22);
+    // Foreground traffic is larger than Cecil and passes in front of the pavement.
+    trafficContext.clearRect(0, 0, VW, H);
+    trafficContext.save();
+    const vehicleScale = Math.max(2.75, (64 * characterScale / screenScale) / 15 + .35);
+    trafficContext.translate(Math.round(busX - cr), H - 4 - 15 * vehicleScale);
+    trafficContext.scale(vehicleScale, vehicleScale);
+    matatu(trafficContext, 0, 0);
+    trafficContext.restore();
     g.restore();
 
     // The panel lives outside the scaled/cropped artwork, so type stays readable.

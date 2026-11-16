@@ -9,7 +9,7 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 
 /** Things in the room Cecil can walk to. x: where he stands; box: what lights up on hover. */
 const HOT = [
-  { id: 'exit', label: 'Back to the street', box: [6, 28, 30, 84], x: 46, say: 'Back out to the street?', href: '/' },
+  { id: 'exit', label: 'Back to Projects', box: [6, 28, 30, 84], x: 46, say: 'Back to the Projects building?', href: '/projects#musoni' },
   { id: 'app', label: 'The app', box: [174, 36, 28, 48], x: 146, say: 'The app. Sign up, verify your ID, get an offer, repay. I built it in Flutter.', target: '#the-app' },
   { id: 'ussd', label: 'The USSD menu', box: [230, 24, 34, 60], x: 204, say: 'No smartphone? Dial in instead. There is a working one further down.', target: '#ussd' },
   { id: 'behind', label: 'Behind the app', box: [284, 40, 46, 30], x: 256, say: 'The engine room: a Spring Boot backend, and a portal for staff.', target: '#behind' },
@@ -84,11 +84,11 @@ function initRoom() {
   let hover = null, leaving = false;
   const chip = (label, fn, primary = false) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (primary) b.className = 'primary'; b.addEventListener('click', (e) => { e.stopPropagation(); fn(); }); return b; };
   const show = (h) => { const el = document.querySelector(h.target); if (el) el.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' }); };
-  function leave() { if (leaving) return; leaving = true; door(); const iris = document.getElementById('iris'); iris.classList.remove('opening'); iris.classList.add('closing'); setTimeout(() => { location.href = base + '/'; }, still ? 0 : 620); }
+  function leave() { if (leaving) return; leaving = true; door(); const iris = document.getElementById('iris'); iris.classList.remove('opening'); iris.classList.add('closing'); setTimeout(() => { location.href = base + '/projects#musoni'; }, still ? 0 : 620); }
   function go(h) { C.goal = h; C.at = null; C.tx = h.x; talk.say(''); blip(660, 0.04); }
   function arrive(h) {
     C.at = h; C.pointUntil = performance.now() + 4000; chime();
-    talk.say(h.say, h.href ? [chip('Yes, back outside', leave, true), chip('Stay', () => talk.say('Then pick something on the counter.'))] : [chip('Show me', () => show(h), true)]);
+    talk.say(h.say, h.href ? [chip('Back to Projects', leave, true), chip('Stay', () => talk.say('Then pick something on the counter.'))] : [chip('Show me', () => show(h), true)]);
   }
   const toArt = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * RW, (e.clientY - r.top) / r.height * RH]; };
   const at = (x, y) => HOT.find((h) => x >= h.box[0] && x <= h.box[0] + h.box[2] && y >= h.box[1] && y <= h.box[1] + h.box[3]) || null;
