@@ -21,6 +21,7 @@ const { title, description, accent = '#ffe066' } = Astro.props;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="preload" href="/fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/sprites/cecil.png" as="image" />
+    <slot name="head" />
   </head>
   <body style={`--accent:${accent}`}>
     <slot />

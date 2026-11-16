@@ -16,7 +16,16 @@ const P = [
 ];
 const BODY = '#12163a', HI = '#262d62', LO = '#0a0d26', TRIM = '#2e3670';
 
-export function initStreet() {
+export async function initStreet() {
+  // Keep the loading screen up until the page, typeface and character are ready.
+  const sheet = loadCecil();
+  await Promise.all([
+    sheet.decode(),
+    document.fonts.ready,
+    document.readyState === 'complete' ? Promise.resolve() : new Promise((resolve) => {
+      window.addEventListener('load', resolve, { once: true });
+    }),
+  ]);
   const stage = document.getElementById('stage'), cv = document.getElementById('street');
   cv.width = VW; cv.height = H;
   const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
@@ -190,7 +199,6 @@ export function initStreet() {
   }
 
   // ---------- Cecil, the bubble and its reply buttons ----------
-  const sheet = loadCecil();
   const C = { x: 312, tx: 312, dir: 1, key: 0, mode: 'idle', at: null, goal: null, waveUntil: 0, step: 0 };
   const bubbleEl = document.getElementById('bubble');
   const talk = speech(bubbleEl);
@@ -324,5 +332,8 @@ export function initStreet() {
   }
   C.waveUntil = performance.now() + 2600;
   greet();
-  requestAnimationFrame(frame);
+  // Resolve only after a complete frame, so the loader never reveals an empty canvas.
+  await new Promise((resolve, reject) => requestAnimationFrame((now) => {
+    try { frame(now); resolve(); } catch (error) { reject(error); }
+  }));
 }

@@ -5,6 +5,31 @@ import { person } from '../content/story';
 ---
 
 <Night title={`${person.name}, ${person.title}`} description={person.line}>
+  <script slot="head" is:inline>
+    // Show the loader before the page is painted, without hiding content when JS is disabled.
+    document.documentElement.classList.add('street-loading');
+    const slowStreet = window.setTimeout(() => {
+      const status = document.getElementById('loading-status');
+      if (status) status.textContent = 'Taking a little longer. You can browse my work while you wait.';
+    }, 10000);
+    document.addEventListener('street:ready', () => {
+      window.clearTimeout(slowStreet);
+      document.documentElement.classList.remove('street-loading');
+    }, { once: true });
+    document.addEventListener('street:error', () => window.clearTimeout(slowStreet), { once: true });
+  </script>
+  <div class="street-loader" aria-label="Loading the street">
+    <div class="street-loader__content">
+      <p class="street-loader__name">{person.name}</p>
+      <p class="street-loader__welcome">Karibu<span>.</span></p>
+      <div class="street-loader__track" aria-hidden="true"><span></span></div>
+      <p class="street-loader__status" id="loading-status" role="status">Loading Nairobi after dark…</p>
+      <a class="street-loader__skip" href="/work">Go straight to my work &rarr;</a>
+    </div>
+  </div>
+  <noscript>
+    <p class="street-fallback">The interactive street needs JavaScript. <a href="/work">Read about my work instead.</a></p>
+  </noscript>
   <main class="home">
     <div class="stage" id="stage">
       <div class="view" id="view">
@@ -33,6 +58,14 @@ import { person } from '../content/story';
   <div class="iris" id="iris"></div>
   <script>
     import { initStreet } from '../scripts/street.js';
-    initStreet();
+    try {
+      await initStreet();
+      document.dispatchEvent(new Event('street:ready'));
+    } catch (error) {
+      console.error('The street could not load.', error);
+      const status = document.getElementById('loading-status');
+      if (status) status.textContent = 'The street could not load. Please refresh, or browse my work below.';
+      document.dispatchEvent(new Event('street:error'));
+    }
   </script>
 </Night>
