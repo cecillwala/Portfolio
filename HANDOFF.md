@@ -41,17 +41,17 @@ Known rough edges:
 
 - Interface and body text now use the system sans-serif stack; the canvas lettering and
   Cecil remain pixel art. The unused pixel font preload has been removed.
-- The home street uses a dark information card instead of the typewriter bubble: building
-  heading, summary, status, accent colour and a direct action. Unbuilt doors link to their
-  corresponding section on `/work`; Musoni retains its doorway transition.
-- Cards sit above Cecil at phone widths, clamp within the viewport, scroll when space is
-  limited, and can be dismissed with the close button or Escape. Short landscape screens
-  use a side card. The Musoni interior still uses the original speech bubble.
-- Production build and simulated DOM interaction checks passed. With Cecil's own dev
-  server running at `http://localhost:4321`, browser checks also passed at 1440×900,
-  390×844, 320×568 and 844×390. Verified welcome/building cards, dismissal, keyboard
-  selection and focus return, and navigation into Musoni; no browser errors were logged.
-  Keyboard focus now waits one animation frame for the opened card to become visible.
+- Home building panels use the original light conversation-bubble styling and tail, with
+  readable sans-serif text, close/Escape support and direct project/work links.
+- Musoni has a scroll guide in `src/scripts/page-guide.js`. One Cecil moves between three
+  reserved horizontal stages above the app, USSD and safeguards content. He walks sideways,
+  faces his movement, then points and speaks. Fast jumps and reduced motion skip travel.
+  Visitors can hide the guide. Its reserved space avoids covering article content.
+- The horizontal guide was checked in the connected browser on desktop and at 390×844:
+  app and USSD stops rendered correctly, without horizontal overflow or console errors.
+- Next direction: structure the portfolio around experience (employers), project case studies,
+  freelance work/company profiles, and about/contact, retaining the street as an exploration
+  route. Freelance case details still need to be collected from Cecil.
 
 ## Clean-up on Cecil's machine
 
