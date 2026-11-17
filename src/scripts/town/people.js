@@ -40,12 +40,19 @@ export const LOOKS = [
 export const BOTTOM = n => LOOKS[n % LOOKS.length].bottom || LOOKS[n % LOOKS.length].top;
 export const SHOES = n => LOOKS[n % LOOKS.length].shoes;
 
-/** Frames of Cecil's sheet, as rows of palette letters (null where empty, '?' for anything else). */
+/**
+ * Frames of Cecil's sheet, as rows of palette letters (null where empty). Each pixel takes the nearest
+ * colour in his palette, not an exact match: browsers that guard against canvas fingerprinting (Brave,
+ * Firefox's resist-fingerprinting, some extensions) nudge the values a page reads back, and on
+ * 17 Nov 2026 exact matching left holes all over the townspeople on Cecil's own screen.
+ */
+const SWATCHES = Object.entries(P).map(([k, v]) => [k, hex(v)]);
+const nearest = (r, g, b) => { let best = 'C', bd = Infinity; for (const [k, [pr, pg, pb]] of SWATCHES) { const d = (r - pr) ** 2 + (g - pg) ** 2 + (b - pb) ** 2; if (d < bd) { bd = d; best = k; } } return best; };
 function letters(sheet, frame) {
   const c = document.createElement('canvas'); c.width = 48; c.height = 64;
   const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(sheet, frame * 48, 0, 48, 64, 0, 0, 48, 64);
   const d = x.getImageData(0, 0, 48, 64).data, g = [];
-  for (let y = 0; y < 64; y++) { const row = []; for (let i = 0; i < 48; i++) { const k = (y * 48 + i) * 4; row.push(d[k + 3] < 128 ? null : KEY[toHex([d[k], d[k + 1], d[k + 2]])] || '?'); } g.push(row); }
+  for (let y = 0; y < 64; y++) { const row = []; for (let i = 0; i < 48; i++) { const k = (y * 48 + i) * 4; row.push(d[k + 3] < 128 ? null : KEY[toHex([d[k], d[k + 1], d[k + 2]])] || nearest(d[k], d[k + 1], d[k + 2])); } g.push(row); }
   return g;
 }
 

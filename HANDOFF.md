@@ -55,6 +55,9 @@ Projects-street still (`design/streets/`) before this was built.
     smile, tee, shirt, jacket, dress or kitenge print, a bag. Same eyes, nose, ears and shading as
     Cecil. A phone frame raises a small phone in both hands; its screen lights at night. Ten looks
     in `LOOKS`; the palette letters match Cecil's frame (see the comment at the top).
+    Reading Cecil's frames back matches each pixel to the *nearest* palette colour: on Cecil's own
+    screen exact matching left holes all over them, because browsers that guard against canvas
+    fingerprinting nudge pixel values on read-back (reproduced with that noise added; fixed).
   - **Waiting people are live** (`crowd` on each street in `streets.js`): four at the town stage, one
     at each other stage, the mama mboga beside her stall, a student at Egerton's gate. They blink
     and some keep checking their phones. The painted figures they replaced are gone.
