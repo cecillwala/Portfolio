@@ -1,15 +1,19 @@
-// Floors are stored oldest first. Both the facade and interior use this directory.
-// Colours carry forward the existing portfolio accents. Supply verified logo paths
-// and brand colours here when the original assets are available; monograms are fallbacks.
+import { musoniBrand } from './brands.js';
+
+// Floors are stored oldest first and revealed inside each building.
+// Musoni uses its repository's verified branding. Other marks remain fallbacks.
+// A floor with `room` is a first-person room: the lift doors open and the visitor is standing on
+// the floor, with Cecil as host (the rooms are in src/scripts/floors). Floors without one still
+// use the arrival bubble and the details pop-up.
 export const buildings = {
   projects: {
     title: 'Projects', subtitle: 'A career, one floor at a time.', accent: '#ffb577',
     intro: 'Start downstairs with the earliest project. Work your way up to what I’m building now.',
     floors: [
-      { id:'musoni', name:'Musoni', mark:'M', logo:null, color:'#ff9a5c', period:'May 2026 → build closed August 2026', status:'In testing', construction:false, category:'Professional', role:'Lead developer · at GikTek',
+      { id:'musoni', name:'Musoni', mark:'M', logo:musoniBrand.logoOnDark, brand:musoniBrand, color:musoniBrand.green, period:'May 2026 → build closed August 2026', status:'In testing', construction:false, category:'Professional', role:'Lead developer · at GikTek',
         summary:'A lending platform spanning a Flutter app, Spring Boot backend, staff portal and USSD channel.',
         points:['Led delivery after picking up the project in May 2026.','Built mobile onboarding, loan applications and repayments.','Delivered the backend, staff portal and a USSD channel for feature phones.'],
-        tags:['Flutter','Spring Boot','USSD','M-Pesa'], href:'/musoni', action:'Enter the Musoni project room' },
+        tags:['Flutter','Spring Boot','USSD','M-Pesa'], room:'musoni' },
       { id:'lexims', name:'LexIMS', mark:'L', logo:null, color:'#ffe066', period:'Current project', status:'Under construction', construction:true, category:'Professional', role:'Developer · workflows, interface & intelligence',
         summary:'An Integrated Management System for projects, compliance, audits, findings and continual improvement.',
         points:['Refining the journeys and interface across the platform.','Connecting findings to actions, owners and follow-up.','Building an intelligence layer that shows its sources and keeps people in control.'],

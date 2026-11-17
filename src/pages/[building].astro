@@ -9,64 +9,122 @@ const { building, slug } = Astro.props;
 const floors = building.floors;
 ---
 <Night title={`${building.title} · Cecil Lwala`} description={building.intro} accent={building.accent}>
-  <header class="building-bar">
-    <a href={`/?from=${slug}`}>← Back to the street</a>
-    <span class="building-bar__name">Cecil’s career / {building.title}</span>
-    <button class="chip" id="snd" type="button" aria-pressed="false">Sound: off</button>
-  </header>
-  <noscript><p class="page">The lift needs JavaScript. <a href="/work">Read the full portfolio here.</a></p></noscript>
   <main class="career-building" data-building={slug}>
-    <header class="building-heading">
-      <span class="building-eyebrow">You’re inside</span>
-      <h1>{building.title}<span>.</span></h1>
-      <p>{building.intro}</p>
+    <header class="building-bar">
+      <a href={`/?from=${slug}`}>← Street</a>
+      <h1>{building.title}</h1>
+      <button class="chip" id="snd" type="button" aria-pressed="false">Sound: off</button>
     </header>
-    <div class="building-layout">
-      <section class="building-cutaway" aria-label={`${building.title} floor directory`}>
-        <div class="building-roof"><span>{building.title}</span><small>Latest upstairs ↑</small></div>
-        <div class="building-shaft" aria-hidden="true"><span>LIFT</span><div id="building-lift" class="building-lift"><span class="building-cecil"></span></div></div>
-        <div class="building-floors">
-          {[...floors].reverse().map((floor) => {
-            const index = floors.findIndex(f => f.id === floor.id);
-            return (
-              <button class:list={['building-floor', { 'is-construction': floor.construction }]} id={`floor-${floor.id}`} data-floor={floor.id} type="button" aria-pressed={index === 0 ? 'true' : 'false'} aria-controls={`story-${floor.id}`} style={`--floor-color:${floor.color}`}>
-                <canvas class="floor-scene" width="480" height="176" data-construction={floor.construction ? 'true' : 'false'} aria-hidden="true"></canvas>
-                <span class="floor-number">{String(index+1).padStart(2,'0')}<small>FLOOR</small></span>
-                <span class="floor-brand">
-                  {floor.logo ? <img src={floor.logo} alt="" /> : <span class="floor-monogram" aria-hidden="true">{floor.mark}</span>}
-                  <span><strong>{floor.name}</strong><small>{floor.status}</small></span>
-                </span>
-                <span class="floor-enter">Visit floor <span aria-hidden="true">↗</span></span>
-                {floor.construction && <span class="construction-label">Work in progress · Mind the hard hats</span>}
-              </button>
-            );
-          })}
+    <section class="elevator-stage" aria-label={`${building.title} lobby and lift`}>
+      <div class="scene-window">
+        <div class="elevator-world" id="elevator-world">
+          <canvas id="building-scene" width="480" height="270" role="img" aria-label="A pixel-art lobby with a lift between two windows. Pixel Cecil stands beside the lift doors."></canvas>
+          <canvas id="building-cecil" width="48" height="64" aria-hidden="true"></canvas>
         </div>
-        <div class="building-lobby"><span>GROUND / RECEPTION</span><small>Earliest work starts on Floor 01</small></div>
-      </section>
-      <aside class="floor-conversations" aria-label="About the selected floor">
-        <p class="floor-guidance">Select a floor. Cecil will take the lift.</p>
+      </div>
+      <div class="scene-plaque" id="scene-plaque"><span class="plaque-number" id="plaque-number">G</span><span id="plaque-name">{building.title} / Lobby</span></div>
+      <nav class="elevator-controls" aria-label="Lift floor buttons">
+        <div class="elevator-control-heading"><span>CHOOSE A FLOOR</span><output id="lift-display" aria-label="Current floor">G</output></div>
+        <div class="elevator-buttons">
+          {[...floors].reverse().map(floor => {
+            const number = String(floors.findIndex(f => f.id === floor.id)+1).padStart(2,'0');
+            const note = floor.construction ? 'In progress' : floor.room ? 'Step inside' : 'Visit floor';
+            return <button type="button" data-floor={floor.id} aria-label={`Floor ${number}: ${floor.name}`} aria-pressed="false" style={`--button-light:${floor.color}`}><span class="lift-key">{number}</span><span class="lift-key-label">{floor.name}<small>{note}</small></span><span class="lift-key-light" aria-hidden="true"></span></button>;
+          })}
+          <button type="button" data-floor="lobby" aria-label="Ground floor: Lobby" aria-pressed="true" style={`--button-light:${building.accent}`}><span class="lift-key">G</span><span class="lift-key-label">Lobby<small>Ground floor</small></span><span class="lift-key-light" aria-hidden="true"></span></button>
+        </div>
+        <p>Press a floor to ride the lift.</p>
+      </nav>
+      <div class="elevator-conversation" id="elevator-conversation">
+        <section id="lobby-arrival" class="floor-arrival">
+          <h2 tabindex="-1">Welcome inside.</h2>
+          <p>Choose a floor on the lift panel and I’ll take you up.</p>
+          <small>Floor 01 is the earliest. The newest work is at the top.</small>
+          <div class="arrival-actions"><a href={`/?from=${slug}`}>Step outside →</a></div>
+        </section>
         {floors.map((floor,index) => (
-          <section class="floor-story" id={`story-${floor.id}`} data-story={floor.id} style={`--floor-color:${floor.color}`} hidden={index !== 0} aria-labelledby={`title-${floor.id}`}>
-            <span class="building-eyebrow">Floor {String(index+1).padStart(2,'0')} / {floor.category}</span>
-            <h2 id={`title-${floor.id}`} tabindex="-1">{floor.name}</h2>
-            <p class="floor-period">{floor.period}</p>
-            <span class="floor-status">{floor.status}</span>
-            <p class="floor-role">{floor.role}</p>
-            <p>{floor.summary}</p>
-            <ul>{floor.points.map(point => <li>{point}</li>)}</ul>
-            <div class="floor-tags">{floor.tags.map(tag => <span>{tag}</span>)}</div>
-            {floor.href && <a class="floor-action" href={floor.href}>{floor.action} →</a>}
-            {floor.construction && <p class="floor-site-note">This floor is still being built. The crew above is a little preview of the work in progress.</p>}
+          <section class="floor-arrival" data-arrival={floor.id} hidden>
+            <span class="arrival-eyebrow">Floor {String(index+1).padStart(2,'0')}{floor.construction ? ' · Under construction' : ''}</span>
+            <h2 tabindex="-1">{floor.name}</h2>
+            {floor.room ? (
+              <>
+                <p>The doors are open.</p>
+                <div class="arrival-actions"><button type="button" data-enter={floor.id}>Step onto the floor</button></div>
+              </>
+            ) : (
+              <>
+                <p>{floor.construction ? 'Mind the hard hats. This project is still taking shape.' : 'The doors are open. Welcome to this floor.'}</p>
+                <div class="arrival-actions">
+                  <button type="button" data-about={floor.id} aria-haspopup="dialog">{floor.category === 'Professional' ? 'About this project' : 'Tell me more'}</button>
+                  {floor.href && <a href={floor.href}>{floor.action + ' →'}</a>}
+                </div>
+              </>
+            )}
           </section>
         ))}
-        {slug === 'projects' && <p class="freelance-note">Professional and freelance work share this building. New freelance floors will be added as the case studies are ready.</p>}
-        <p class="building-keyboard">Tip: Tab to a floor and press Enter. ↑ / ↓ moves between floors.</p>
-      </aside>
-    </div>
-    <p class="lift-status sr" id="lift-status" role="status">Floor 01 selected</p>
+        <p class="travel-message" id="travel-message" hidden>Going up…</p>
+      </div>
+      <p class="sr" id="lift-status" role="status" aria-live="polite">Ground floor. Choose a lift button.</p>
+      {floors.some(floor => floor.room) && (
+        <section class="floor-view" id="floor-view" aria-label="On the floor" hidden>
+          <div class="floor-window" id="floor-window">
+            <div class="floor-world" id="floor-world">
+              <canvas id="floor-scene" width="480" height="270" role="img"></canvas>
+              <canvas id="floor-cecil" width="48" height="64" aria-hidden="true"></canvas>
+              <div id="floor-things"></div>
+            </div>
+          </div>
+          <button class="floor-leave" id="floor-leave" type="button"><span class="floor-key__arrow floor-key__arrow--left" aria-hidden="true"></span>The lift</button>
+          <div class="floor-pips" id="floor-pips" role="group" aria-label="Stops on this floor"></div>
+          <div class="floor-says" id="floor-says" tabindex="0" aria-live="polite">
+            <span class="floor-says__name" aria-hidden="true">Cecil</span>
+            <p id="floor-line"></p>
+            <div class="arrival-actions" id="floor-actions" hidden></div>
+            <span class="floor-says__page" id="floor-page" aria-hidden="true"></span>
+            <span class="floor-says__more" aria-hidden="true"></span>
+          </div>
+          <div class="floor-pad" role="group" aria-label="Game controls">
+            <div class="floor-pad__group">
+              <div class="floor-pad__keys">
+                <button class="floor-key" id="floor-prev" type="button" aria-label="Walk back to the previous stop"><span class="floor-key__arrow floor-key__arrow--left"></span></button>
+                <button class="floor-key" id="floor-next" type="button" aria-label="Walk on to the next stop"><span class="floor-key__arrow"></span></button>
+              </div>
+              <span class="floor-pad__label">Walk</span>
+            </div>
+            <div class="floor-pad__group">
+              <button class="floor-key floor-key--a" id="floor-a" type="button" aria-labelledby="floor-a-label">A</button>
+              <span class="floor-pad__label" id="floor-a-label"></span>
+            </div>
+          </div>
+          <div class="floor-viewer" id="floor-viewer" role="dialog" hidden>
+            <img id="floor-viewer-image" alt="" />
+          </div>
+          <div class="floor-closeup" id="floor-closeup" role="dialog" hidden>
+            <div id="floor-closeup-body"></div>
+            <button class="floor-closeup__done" id="floor-closeup-done" type="button"></button>
+          </div>
+        </section>
+      )}
+    </section>
+    <noscript><p class="page">The lift needs JavaScript. <a href="/work">Read the full portfolio here.</a></p></noscript>
+    <dialog class="floor-details" id="floor-details" aria-labelledby="details-title">
+      <button class="details-close" id="details-close" type="button" aria-label="Close details">Close ×</button>
+      <h2 class="sr" id="details-title">Floor details</h2>
+      {floors.filter(floor => !floor.room).map(floor => (
+        <article class="floor-story" data-story={floor.id} hidden style={`--floor-color:${floor.color};--floor-ink:${floor.brand?.navy || '#18243c'}`}>
+          <span class="arrival-eyebrow">Floor {String(floors.indexOf(floor)+1).padStart(2,'0')} / {floor.category}</span>
+          <h3>{floor.brand ? <img src={floor.brand.logo} alt={floor.name} width="286" height="53" /> : floor.name}</h3>
+          <p class="floor-period">{floor.period} · {floor.status}</p>
+          <p><strong>{floor.role}</strong></p>
+          <p>{floor.summary}</p>
+          <ul>{floor.points.map(point => <li>{point}</li>)}</ul>
+          <div class="floor-tags">{floor.tags.map(tag => <span>{tag}</span>)}</div>
+          {floor.href && <a class="floor-action" href={floor.href}>{floor.action} →</a>}
+        </article>
+      ))}
+    </dialog>
   </main>
-  <div class="iris opening" aria-hidden="true"></div>
+  <div class="iris opening" id="iris" aria-hidden="true"></div>
   <script>
     import { initBuilding } from '../scripts/building.js';
     initBuilding();

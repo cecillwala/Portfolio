@@ -35,7 +35,7 @@ export async function loadStreet(initStreet) {
     cancelAnimationFrame(animation);
     console.error('The street could not load.', error);
     const status = document.getElementById('loading-status');
-    if (status) status.textContent = 'The street could not load. Please refresh, or browse my work below.';
+    if (status) status.textContent = 'The street could not load. Please refresh the page.';
     document.dispatchEvent(new Event('street:error'));
   }
 }

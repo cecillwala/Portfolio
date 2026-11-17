@@ -1,5 +1,10 @@
 ---
-// Home: the street. The scene is drawn by src/scripts/street.js.
+// Home: the street, and only the street (interactive mode). Cecil, 17 Nov 2026: "there should be a
+// stark difference between interactive mode and browser mode ... On root I only want to see the
+// street for now." The professional cover and the "Selected work" section that sat over and under
+// it were the two modes mixed; they wait for browser mode.
+// Since 17 Nov 2026 (evening) the street is a town: four streets joined by a matatu, each a different
+// place, with Nairobi's time of day and the weather. Drawn by src/scripts/town/ (town.js runs it).
 import Night from '../layouts/Night.astro';
 import { person } from '../content/story';
 ---
@@ -11,7 +16,7 @@ import { person } from '../content/story';
     document.documentElement.classList.add('street-loading');
     const slowStreet = window.setTimeout(() => {
       const status = document.getElementById('loading-status');
-      if (status) status.textContent = 'Taking a little longer. You can browse my work while you wait.';
+      if (status) status.textContent = 'Taking a little longer. Nearly there.';
     }, 10000);
     document.addEventListener('street:ready', () => {
       window.clearTimeout(slowStreet);
@@ -19,27 +24,24 @@ import { person } from '../content/story';
     }, { once: true });
     document.addEventListener('street:error', () => window.clearTimeout(slowStreet), { once: true });
   </script>
-  <div class="street-loader" aria-label="Loading the street">
-    <div class="street-loader__content">
-      <div class="street-loader__cecil" aria-hidden="true"></div>
-      <div class="street-loader__progress" id="loading-progress" role="progressbar" aria-label="Loading the street" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</div>
-      <p class="street-loader__status" id="loading-status" role="status">Loading Nairobi after dark…</p>
-      <a class="street-loader__skip" href="/work">Go straight to my work &rarr;</a>
-    </div>
-  </div>
   <noscript>
     <p class="street-fallback">The interactive street needs JavaScript. <a href="/work">Read about my work instead.</a></p>
   </noscript>
-  <main class="home">
+  <main class="home" id="home">
+    <div class="street-loader" aria-label="Loading the street">
+      <div class="street-loader__content">
+        <div class="street-loader__cecil" aria-hidden="true"></div>
+        <div class="street-loader__progress" id="loading-progress" role="progressbar" aria-label="Loading the street" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</div>
+        <p class="street-loader__status" id="loading-status" role="status">Loading Nairobi…</p>
+      </div>
+    </div>
     <div class="stage" id="stage">
       <div class="view" id="view">
       <canvas
         id="street"
         role="img"
-        aria-label="A pixel-art street in Nairobi at night. Four buildings with neon signs: Projects, Work Experience, Education and a post office. Projects are stacked as floors, with mini construction workers on the unfinished LexIMS floor. Pixel Cecil stands on the pavement."
+        aria-label="A pixel-art town in Kenya, at Nairobi's time of day, sometimes in the rain. Four streets joined by a matatu: the stage in town with the post office, Projects in Upper Hill with Musoni and LexIMS, Experience on Ngong Road with Podii and GikTek, and Education in Njoro with Egerton University. Pixel Cecil walks the pavement."
       ></canvas>
-      <canvas class="street-traffic" id="street-traffic" width="426" height="240" aria-hidden="true"></canvas>
-      <canvas class="street-character" id="street-character" width="48" height="64" aria-hidden="true"></canvas>
       </div>
       <section class="place-card off" id="place-card" aria-labelledby="place-title" aria-hidden="true" inert>
         <div class="place-card__header">
@@ -52,40 +54,41 @@ import { person } from '../content/story';
         <div class="place-card__actions"></div>
       </section>
       <div class="hud">
-        <h1 class="chip name" style="margin:0;font-weight:400">{person.name}</h1>
+        <p class="chip name" style="margin:0;font-weight:400">{person.name}</p>
         <span class="role">{person.title}, {person.location}</span>
         <span class="sp"></span>
-        <span class="chip" id="clock">Nairobi</span>
+        <button class="chip" id="clock" type="button" aria-label="Time of day: Nairobi now. Change">Nairobi</button>
+        <button class="chip" id="weather" type="button" aria-label="Weather. Change">Weather: auto</button>
         <div class="street-modes" role="group" aria-label="Home page mode">
           <button id="street-explore" type="button" aria-pressed="true">Explore</button>
           <button id="street-wallpaper" type="button" aria-pressed="false">Wallpaper</button>
         </div>
         <button class="chip" id="street-help-open" type="button" aria-expanded="false" aria-controls="street-help">Directions</button>
         <button class="chip" id="snd" type="button" aria-pressed="false">Sound: off</button>
-        <a class="chip" href="/work">Skip to the work</a>
       </div>
-      <p class="hint" id="hint" style="margin:0">Choose a building below. Cecil walks there, then tells its story.</p>
-      <p class="street-location" id="street-location" role="status">Nairobi after dark · Choose your first stop</p>
+      <p class="hint" id="hint" style="margin:0">Choose a place below, or take the matatu to another street.</p>
+      <p class="street-location" id="street-location" role="status">Kenyatta Avenue, town</p>
       <aside class="street-help" id="street-help" aria-labelledby="street-help-title" hidden>
         <button class="street-help__close" id="street-help-close" type="button" aria-label="Close directions">×</button>
         <span class="street-help__eyebrow">Your guide to the street</span>
         <h2 id="street-help-title" tabindex="-1">Explore at your own pace.</h2>
         <ol>
-          <li><strong>Choose a stop.</strong> Tap a building or its name in the bar below. Cecil will walk there.</li>
-          <li><strong>Follow the conversation.</strong> Read about each place and use the bubble’s buttons to continue. Projects, Work Experience and Education each have a building to enter.</li>
-          <li><strong>Walk yourself.</strong> On a keyboard, use <kbd>←</kbd> and <kbd>→</kbd>. At an entrance, press <kbd>Enter</kbd> to go inside.</li>
+          <li><strong>Choose a place.</strong> Tap a building or its name in the bar below. Cecil will walk there.</li>
+          <li><strong>Take the matatu.</strong> Each street is a different part of my story. Walk to the stage and pick where to go.</li>
+          <li><strong>Walk yourself.</strong> On a keyboard, use <kbd>←</kbd> and <kbd>→</kbd>. At a door or the stage, press <kbd>Enter</kbd>.</li>
         </ol>
-        <p><kbd>Esc</kbd> closes conversations and directions. <strong>Wallpaper</strong> hides the interface; choose <strong>Explore</strong> to return.</p>
-        <div class="street-help__legend"><span>Projects · earliest downstairs</span><span>Experience · Podii to GikTek</span><span>Education · Egerton</span><span>Post office · Contact</span></div>
+        <p>The town keeps Nairobi’s time and its weather. Tap the clock to see another time of day, or the weather to call the rain. <kbd>Esc</kbd> closes conversations. <strong>Wallpaper</strong> hides the interface.</p>
+        <div class="street-help__legend"><span>Town · the post office</span><span>Upper Hill · Projects</span><span>Ngong Road · Experience</span><span>Njoro · Education</span></div>
         <button id="street-help-start" class="chip" type="button">Let’s explore →</button>
       </aside>
       <nav class="street-destinations" aria-label="Places on the street" id="places"></nav>
     </div>
   </main>
+
   <div class="iris" id="iris"></div>
   <script>
-    import { initStreet } from '../scripts/street.js';
+    import { initTown } from '../scripts/town/town.js';
     import { loadStreet } from '../scripts/loading.js';
-    loadStreet(initStreet);
+    loadStreet(initTown);
   </script>
 </Night>

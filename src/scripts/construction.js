@@ -1,7 +1,7 @@
 import { R, still } from './pixel.js';
 
-// Coordinates are local to a floor; the same scene appears on the street and inside.
-export function drawConstruction(c, sheet, x, y, w, h, seconds) {
+// Coordinates are local to a floor. Worker scale keeps the crew smaller than Cecil.
+export function drawConstruction(c, sheet, x, y, w, h, seconds, {workerScale=1}={}) {
   const t = still ? 0 : seconds;
   R(c,'#101b32',x,y,w,h);
   for (let i=0;i<4;i++) {
@@ -15,7 +15,7 @@ export function drawConstruction(c, sheet, x, y, w, h, seconds) {
   }
   c.strokeStyle='#5c6171';c.lineWidth=1;
   c.beginPath();c.moveTo(x+3,y+h-6);c.lineTo(x+w/3,y+3);c.moveTo(x+w/3,y+h-6);c.lineTo(x+3,y+3);c.stroke();
-  const workerH=Math.min(h*.40,28),workerW=workerH*.75;
+  const workerH=Math.min(h*.40,28)*workerScale,workerW=workerH*.75;
   for(let i=0;i<3;i++) {
     const progress=(t*(.10+i*.025)+i*.32)%2;
     const direction=progress<1;

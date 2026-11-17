@@ -42,6 +42,8 @@ button.chip[aria-pressed='true'], a.chip:hover { background: var(--accent); colo
 .hint { position: absolute; left: 2%; bottom: 2.5%; font-size: clamp(9px, 1.1vw, 14px); background: #101030cc; padding: 0.35em 0.7em; z-index: 4; }
 .tip { position: absolute; transform: translate(-50%, -130%); background: var(--ink); color: var(--text); border: 2px solid var(--accent); padding: 0.2em 0.55em; font-size: clamp(10px, 1.1vw, 14px); white-space: nowrap; pointer-events: none; z-index: 4; }
 .tip[hidden] { display: none; }
+/* Cecil in a room: his own full-detail canvas over the scene, placed by the room's script. */
+.stage canvas.room-cecil { position: absolute; inset: auto; pointer-events: none; z-index: 2; image-rendering: pixelated; }
 
 /* doorway transition: a round hole in a dark sheet that closes on the door, or opens from the middle */
 .iris { position: fixed; left: 50%; top: 50%; width: 300vmax; height: 300vmax; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 300vmax var(--night); pointer-events: none; z-index: 50; transition: width 0.6s cubic-bezier(0.6, 0, 0.4, 1), height 0.6s cubic-bezier(0.6, 0, 0.4, 1); }
@@ -217,24 +219,55 @@ button.chip[aria-pressed='true'], a.chip:hover { background: var(--accent); colo
 /* Keep short-screen bubbles scrollable; the tail is decorative. */
 @media (max-height: 650px) { .place-card { overflow-y: auto; } }
 
-/* Three little stages inside the article: horizontal routes beside the things Cecil explains. */
+/* Cecil's guide on a case-study page (src/scripts/page-guide.js). He stands in small spots right beside the
+   things he explains: next to each phone, beside the USSD handset, on the line above a list. */
 .cols:has(.guided-story) { grid-template-columns: minmax(0, 1fr); gap: 24px; }
 .cols:has(.guided-story) .toc { position: static; display: flex; flex-wrap: wrap; gap: 8px; }
 .guide-toggle { justify-self: start; }
+.guide-toggle[hidden], .page-guide[hidden] { display: none; }
 .guided-story { min-width: 0; }
-.guide-stop { position: relative; height: 230px; margin-bottom: 24px; }
-.guide-stop::after { content: ''; position: absolute; bottom: 8px; left: 0; right: 0; height: 4px; background: var(--line); box-shadow: 0 4px 0 #0a0d26; }
-.page-guide { position: absolute; inset: 0; }
-.page-guide[hidden], .guide-toggle[hidden] { display: none; }
-.page-guide__words { position: absolute; left: var(--speech-x, 0px); bottom: 104px; width: min(290px, 100%); margin: 0 !important; padding: 12px 16px; border: 2px solid var(--ink); background: var(--text); color: var(--ink); box-shadow: 3px 3px 0 var(--ink); font-size: 14px !important; line-height: 1.5; transition: opacity 180ms ease; }
-.page-guide__words::after { content: ''; position: absolute; bottom: -8px; left: calc(var(--speech-tail, 30px) - 6px); width: 12px; height: 12px; transform: rotate(45deg); background: var(--text); border: solid var(--ink); border-width: 0 2px 2px 0; }
-.page-guide__sprite { position: absolute; left: var(--stop-x, 0px); bottom: 12px; width: 60px; height: 74px; }
-.page-guide__sprite::after { content: ''; display: block; width: 100%; height: 100%; background: url('/sprites/cecil.png') -420px 0 / 600px 74px no-repeat; image-rendering: pixelated; transform: scaleX(var(--facing, 1)); }
-.walking .page-guide__sprite::after { animation: guide-walk 0.6s steps(4) infinite; }
-.walking .page-guide__words { opacity: 0; }
-@keyframes guide-walk { from { background-position-x: -180px; } to { background-position-x: -420px; } }
-.guide-hidden .page-guide { visibility: hidden; }
-@media (prefers-reduced-motion: reduce) { .page-guide__words { transition: none; } .walking .page-guide__sprite::after { animation: none; } }
+.guide-spot { position: relative; height: 108px; margin: 4px 0 6px; }
+.guide-spot--ledge { margin: 26px 0 -22px; }                       /* his feet rest on the list's top border */
+.guide-spot--inline { flex: 1 1 300px; margin: 0; }
+.guide-host, #brief { position: relative; }
+.next:has(.guide-spot) { align-items: flex-end; }
+/* Beside the USSD handset: the handset keeps the left column, Cecil stands at the top of the right one. */
+.ussd > .guide-spot { grid-column: 2; grid-row: 1; margin: 0; }
+.ussd:has(> .guide-spot) { grid-template-rows: auto 1fr; }
+.ussd:has(> .guide-spot) .handset { grid-row: 1 / span 2; }
+.ussd:has(> .guide-spot) .ussd-side { grid-column: 2; grid-row: 2; }
+@media (max-width: 720px) {
+  /* Stacked: he stands above the handset and stays in view while its keys are being pressed. */
+  .ussd > .guide-spot { grid-column: 1; grid-row: auto; order: -1; position: sticky; top: 50px; z-index: 4; background: var(--night); box-shadow: 0 6px 0 var(--night); }
+  .ussd:has(> .guide-spot) .handset, .ussd:has(> .guide-spot) .ussd-side { grid-column: 1; grid-row: auto; }
+}
+@media (min-width: 1040px) { .guide-spot--aside { position: absolute; right: 0; bottom: 0; width: 330px; margin: 0; } }
+.page-guide { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.guide-host > .page-guide { inset: 0 0 auto 0; height: var(--gh, 100%); }
+.page-guide__cecil { position: absolute; left: var(--gx, 0px); bottom: 0; width: 72px; height: 96px; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
+.page-guide__cecil canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.page-guide__cecil:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.page-guide__bubble { position: absolute; bottom: 18px; left: calc(var(--gx, 0px) + 86px); width: max-content; max-width: min(340px, calc(100% - var(--gx, 0px) - 90px)); padding: 10px 14px; border: 3px solid var(--ink); background: var(--text); color: var(--ink); box-shadow: 4px 4px 0 var(--ink); pointer-events: auto; }
+.page-guide__bubble::after { content: ''; position: absolute; left: -10px; bottom: 22px; width: 14px; height: 14px; background: var(--text); border: solid var(--ink); border-width: 0 0 3px 3px; transform: rotate(45deg); }
+.page-guide[data-bubble='left'] .page-guide__bubble { left: auto; right: calc(100% - var(--gx, 0px) + 14px); max-width: min(340px, calc(var(--gx, 0px) - 18px)); }
+.page-guide[data-bubble='left'] .page-guide__bubble::after { left: auto; right: -10px; border-width: 3px 3px 0 0; }
+.page-guide[data-bubble='above'] .page-guide__bubble { bottom: 108px; left: max(0px, calc(var(--gx, 0px) - 34px)); max-width: min(240px, calc(100% - max(0px, var(--gx, 0px) - 34px))); }
+.page-guide[data-bubble='above'] .page-guide__bubble::after { left: min(60px, calc(var(--gx, 0px) + 28px)); bottom: -10px; border-width: 0 3px 3px 0; }
+.story .page-guide__words { margin: 0; max-width: none; font-size: 0.86rem; line-height: 1.4; }
+.page-guide__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.page-guide__chips:empty { display: none; }
+.page-guide__chips button { font: inherit; font-size: 0.8rem; padding: 3px 9px; border: 2px solid var(--ink); background: var(--accent); color: var(--ink); cursor: pointer; }
+.page-guide__chips button:hover { background: var(--ink); color: var(--text); }
+.page-guide.is-walking .page-guide__bubble { visibility: hidden; }
+/* What he is pointing at. */
+.guide-ring { outline: 3px dashed var(--accent); outline-offset: 5px; animation: guide-ring 0.9s steps(2) infinite; }
+@keyframes guide-ring { 50% { outline-offset: 8px; } }
+/* With the guide switched off, the page goes back to its plain written instructions. */
+.guide-hidden .guide-spot { display: none; }
+.guide-hidden .ussd .handset, .guide-hidden .ussd .ussd-side { grid-row: auto; }
+.guide-hidden .ussd { grid-template-rows: none; }
+.guide-live:not(.guide-hidden) .ussd-side ol { display: none; }
+@media (prefers-reduced-motion: reduce) { .guide-ring { animation: none; } }
 
 /* Street recovery: keep the scene rich and navigation inside the world. */
 .street-destinations { position: absolute; z-index: 7; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; max-width: calc(100% - 24px); padding: 6px; background: #101629eb; border: 1px solid #ffffff30; border-radius: 12px; overflow-x: auto; }

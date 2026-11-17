@@ -1,7 +1,5 @@
 // The home page: a street in Nairobi at night. Everything is drawn here, in code.
 // The view is 426x240 art pixels; the street is wider and the camera follows Cecil.
-import { buildings } from '../content/buildings.js';
-import { drawConstruction } from './construction.js';
 import { still, rng, dth, layer, R, mix, shade, textW, neon, SPRITE, blip, chime, step, door, soundButton } from './pixel.js';
 
 const VW = 426, H = 240, GY = 200, W = 704, PAD = 14;
@@ -18,8 +16,6 @@ const BODY = '#12163a', HI = '#262d62', LO = '#0a0d26', TRIM = '#2e3670';
 
 export async function initStreet(onProgress = () => {}) {
   // Keep the loading screen up until the page, typeface and character are ready.
-  const crew = new Image(); crew.src = base + '/sprites/cecil-worker.png';
-  await crew.decode();
   const sheet = new Image();
   sheet.src = base + '/sprites/cecil-town.png';
   // Three asset milestones plus the first complete scene frame. These are readiness
@@ -33,11 +29,6 @@ export async function initStreet(onProgress = () => {}) {
       window.addEventListener('load', resolve, { once: true });
     })),
   ]);
-  const floorLogos = new Map();
-  await Promise.all(buildings.projects.floors.filter(f => f.logo).map(async floor => {
-    const logo = new Image(); logo.src = floor.logo;
-    try { await logo.decode(); floorLogos.set(floor.id,logo); } catch { /* Use the initial mark if a logo is unavailable. */ }
-  }));
   const stage = document.getElementById('stage'), cv = document.getElementById('street');
   cv.width = VW; cv.height = H;
   const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
@@ -179,25 +170,29 @@ export async function initStreet(onProgress = () => {}) {
       b.shop = { x: b.x + 9, y: GY - 39, w: b.w - 48, h: 28 };
     }
     const y0 = top + (b.kind === 'archive' ? 30 : 26), y1 = GY - (b.kind === 'shop' ? 72 : 58);
-    for (let y = y0; b.kind !== 'projects' && y <= y1; y += 14) for (let x = b.x + 9; x <= b.x + b.w - 16; x += 12) {
+    for (let y = y0; y <= y1; y += 14) for (let x = b.x + 9; x <= b.x + b.w - 16; x += 12) {
       R(ne, '#090c22', x, y, 7, 9); R(ne, '#1a2156', x, y, 7, 1); R(ne, '#1a2156', x, y, 1, 9);
       wins.push({ x, y, w: 7, h: 9, on: wr() < 0.5, col: ['#ffd27a', '#ffd27a', '#ffb454', '#ffe6a6'][Math.floor(wr() * 4)], tv: wr() < 0.07 });
     }
     R(ne, TRIM, b.door - 2, GY - 35, 22, 35); R(ne, '#3c4688', b.door - 2, GY - 35, 22, 1); R(ne, '#3c4688', b.door - 3, GY - 1, 24, 1);
     b.signText = b.id === 'WORK' ? 'EXPERIENCE' : b.id;
-    b.signW = textW(b.signText, 2); b.signX = b.x + ((b.w - b.signW) >> 1); b.signY = top + 9;
-    R(ne, '#080a1e', b.signX - 4, b.signY - 3, b.signW + 8, 16);
+    b.signW = textW(b.signText, 2); b.signX = b.x + ((b.w - b.signW - 18) >> 1) + 18; b.signY = top + 9;
+    R(ne, '#080a1e', b.signX - 22, b.signY - 3, b.signW + 26, 16);
+    // Building emblems only: project branding belongs behind the entrance.
+    const ix = b.signX - 17, iy = b.signY;
+    if (b.kind === 'projects') {
+      for (let row=0;row<3;row++) { R(ne,b.neon,ix,iy+row*4,11,3); R(ne,'#080a1e',ix+3,iy+row*4+1,5,1); }
+    } else if (b.kind === 'office') {
+      R(ne,b.neon,ix+3,iy,5,2); R(ne,b.neon,ix,iy+3,11,8); R(ne,'#080a1e',ix+1,iy+4,9,2); R(ne,b.neon,ix+5,iy+5,1,3);
+    } else if (b.kind === 'hall') {
+      R(ne,b.neon,ix,iy+1,5,9); R(ne,b.neon,ix+6,iy+1,5,9); R(ne,b.neon,ix+5,iy+3,1,8);
+      R(ne,'#080a1e',ix+1,iy+3,3,1); R(ne,'#080a1e',ix+7,iy+3,3,1);
+    } else {
+      R(ne,b.neon,ix,iy+2,11,8); R(ne,'#080a1e',ix+1,iy+3,9,1); R(ne,'#080a1e',ix+3,iy+4,5,1);
+    }
     shade(ne, mix(b.neon, BODY, 0.45), b.signX - 6, b.signY + 13, b.signX + b.signW + 6, b.signY + 21, (x, y) => 0.45 * (1 - (y - b.signY - 13) / 8));
     if(b.kind === 'projects') {
-      b.floorRects = buildings.projects.floors.map((floor,index)=>({floor,x:b.x+8,y:GY-77-index*43,w:b.w-16,h:35}));
-      for(const room of b.floorRects) {
-        R(ne,'#0c1630',room.x,room.y,room.w,room.h);
-        R(ne,room.floor.color,room.x,room.y+room.h-2,room.w,2);
-        if(!room.floor.construction)for(let wx=room.x+8;wx<room.x+room.w-8;wx+=20){
-          R(ne,'#b18a61',wx,room.y+18,12,13);R(ne,'#f0cc8b',wx+1,room.y+19,10,11);R(ne,'#26334c',wx+5,room.y+19,1,11);
-        }
-      }
-      // A crane above the live top floor makes the unfinished silhouette visible.
+      // A rooftop crane hints at work in progress without exposing the interiors.
       R(ne,'#c2a65a',b.x+b.w-20,top-26,2,85);
       R(ne,'#c2a65a',b.x+60,top-26,b.w-65,2);
       R(ne,'#65728d',b.x+86,top-24,1,22);
@@ -413,17 +408,6 @@ export async function initStreet(onProgress = () => {}) {
     if (!still && now > flick.until + 2500 + Math.random() * 4000) { const b = P[Math.floor(Math.random() * P.length)]; flick = { b, i: Math.floor(Math.random() * b.id.length), until: now + 140 }; }
     for (const b of P) {
       const hot = !stage.classList.contains('street-wallpaper') && (hover === b || C.at === b || C.goal === b);
-      if (b.floorRects) {
-        for(const room of b.floorRects) {
-          if(room.floor.construction)drawConstruction(g,crew,room.x,room.y,room.w,room.h,t);
-          const f=room.floor;
-          R(g,'#111831',room.x+4,room.y+3,room.w-8,13);
-          const logo=floorLogos.get(f.id);
-          if(logo)g.drawImage(logo,room.x+7,room.y+5,9,9);
-          else { R(g,f.color,room.x+7,room.y+5,9,9); neon(g,f.mark,room.x+9,room.y+7,1,'#14172a'); }
-          neon(g,f.name.toUpperCase(),room.x+22,room.y+7,1,f.color);
-        }
-      }
       if (b.shop) {
         R(g, '#ffd27a', b.shop.x, b.shop.y, b.shop.w, b.shop.h); R(g, '#fff0b8', b.shop.x, b.shop.y, b.shop.w, 2); R(g, '#c98a4b', b.shop.x, b.shop.y + b.shop.h - 5, b.shop.w, 5);
         for (let x = b.shop.x + 12; x < b.shop.x + b.shop.w; x += 13) R(g, '#12163a', x, b.shop.y, 1, b.shop.h);
@@ -493,6 +477,9 @@ export async function initStreet(onProgress = () => {}) {
   }
   C.waveUntil = performance.now() + 2600;
   greet();
+
+  // The street is the whole home page (no front-page cover over it since 17 Nov 2026): start exploring.
+  setMode(false);
   // Resolve only after a complete frame, so the loader never reveals an empty canvas.
   await new Promise((resolve, reject) => requestAnimationFrame((now) => {
     try { frame(now); resolve(); } catch (error) { reject(error); }

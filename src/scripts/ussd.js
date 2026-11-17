@@ -4,6 +4,8 @@ import { key, chime, blip } from './pixel.js';
 
 const kes = (n) => 'KES ' + Number(n).toLocaleString('en-KE');
 
+/** Wires the handset (#handset, #lcd). Every step is announced as a `ussd:state` event on the handset,
+ *  with detail { state, done }, so a guide can say what to press next. */
 export function initUssd() {
   const lcd = document.getElementById('lcd'), pad = document.getElementById('handset');
   if (!lcd || !pad) return;
@@ -17,7 +19,7 @@ export function initUssd() {
     amount: { text: () => 'Loan amount (KES):\n' + input, entry: 6, hot: ['digits', 'send'], send: () => { amount = Number(input); return amount >= 500 && amount <= 50000 ? 'cost' : 'range'; } },
     range: { text: () => 'Enter an amount from\n500 to 50,000.\n\n0. Back', hot: ['0'], keys: { 0: 'amount' } },
     cost: { text: () => `You get ${kes(amount)}.\nYou repay ${kes(Math.round(amount * 1.1))}\nwithin 30 days.\n1. Confirm\n2. Cancel`, hot: ['1', '2'], keys: { 1: 'sent', 2: 'menu' } },
-    sent: { text: () => 'Request received.\nYou will get an SMS\nonce it is reviewed.\n\n0. Menu', hot: ['0'], keys: { 0: 'menu' }, win: true },
+    sent: { text: () => 'Request received.\nYou will get an SMS\nwith the decision.\n\n0. Menu', hot: ['0'], keys: { 0: 'menu' }, win: true },
     loans: { text: () => '1. View balance\n2. Repay loan\n0. Back', hot: ['1', '2', '0'], keys: { 1: 'balance', 2: 'repay', 0: 'menu' } },
     balance: { text: () => 'Balance: KES 5,500\nDue in 12 days.\n\n0. Back', hot: ['0'], keys: { 0: 'loans' } },
     repay: { text: () => 'Amount to repay (KES):\n' + input, entry: 6, hot: ['digits', 'send'], send: () => { amount = Number(input); return amount > 0 ? 'stk' : 'repay'; } },
@@ -34,7 +36,8 @@ export function initUssd() {
       b.classList.toggle('hot', s.hot.includes(k) || (s.hot.includes('digits') && /^\d$/.test(k)));
     }
   }
-  function to(next) { state = next; input = ''; if (S[state].win) chime(); render(); }
+  const announce = () => pad.dispatchEvent(new CustomEvent('ussd:state', { bubbles: true, detail: { state, done: !!S[state].win } }));
+  function to(next) { state = next; input = ''; if (S[state].win) chime(); render(); announce(); }
   function press(k) {
     const s = S[state];
     key();
@@ -49,5 +52,5 @@ export function initUssd() {
     if (/^[0-9*#]$/.test(e.key)) { press(e.key); e.preventDefault(); }
     else if (e.key === 'Backspace') { press('clear'); e.preventDefault(); }
   });
-  render();
+  render(); announce();
 }

@@ -42,6 +42,7 @@ const F = {
   M: '1000111011101011000110001', N: '10011101101110011001', W: '1000110001101011101110001',
   0: '111101101101111', 1: '010110010010111', 2: '110001010100111', 3: '110001010001110', 4: '101101111001001',
   5: '111100110001110', 6: '011100110101010', 7: '111001010010010', 8: '010101010101010', 9: '010101011001110',
+  '+': '000010111010000', '-': '000000111000000', '.': '000000000000010',
 };
 const glyph = (ch) => { const s = F[ch] ?? F[' ']; const w = s.length / 5; return { w, at: (cx, cy) => s[cy * w + cx] === '1' }; };
 export const textW = (t, k = 1) => [...t].reduce((n, ch) => n + (glyph(ch).w + 1) * k, -k);
@@ -81,6 +82,43 @@ export function drawCecil(c, img, frame, x, feetY, flip = false) {
   const sh = img.naturalWidth === 480 ? 64 : SPRITE.h;
   c.drawImage(img, frame * sw, 0, sw, sh, -15, 0, SPRITE.w, SPRITE.h);
   c.restore();
+}
+
+// ---------- one Cecil for every scene ----------
+// The detailed sheet, public/sprites/cecil-town.png (drawn by design/town-cecil.py): ten 48x64
+// frames in the same order as SPRITE. Scenes are drawn at low resolution, so he gets a canvas of
+// his own laid over the scene; that keeps his face sharp and identical on the street, in the
+// lobbies and in every room. Do not draw him into a scene canvas with the older small sheet.
+// `sheet` names another outfit drawn by the same script (for example 'cecil-office'); the frames match.
+export const CECIL = { w: 48, h: 64 };
+/** Round a wanted enlargement to steps that keep his pixels even: halves from 1 up, quarters below. */
+export const cecilScale = (wanted) => (wanted >= 1 ? Math.round(wanted * 2) / 2 : Math.max(0.5, Math.round(wanted * 4) / 4));
+export function cecilActor(canvas, sheet = 'cecil-town') {
+  const img = new Image();
+  img.src = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/sprites/' + sheet + '.png';
+  canvas.width = CECIL.w; canvas.height = CECIL.h;
+  const g = canvas.getContext('2d'); g.imageSmoothingEnabled = false;
+  let drawn = '';
+  return {
+    img,
+    /** Show one frame; `flip` mirrors the side-on walk so he faces left. */
+    draw(frame, flip = false) {
+      if (!img.naturalWidth) return;
+      const key = frame + (flip ? 'L' : 'R'); if (key === drawn) return; drawn = key;
+      g.clearRect(0, 0, CECIL.w, CECIL.h); g.save();
+      if (flip) { g.translate(CECIL.w, 0); g.scale(-1, 1); }
+      g.drawImage(img, frame * CECIL.w, 0, CECIL.w, CECIL.h, 0, 0, CECIL.w, CECIL.h); g.restore();
+    },
+    /** Put his feet at (x, feetY) in CSS pixels of the positioned parent, at the given enlargement. */
+    place(x, feetY, scale) {
+      const st = canvas.style;
+      st.width = CECIL.w * scale + 'px'; st.height = CECIL.h * scale + 'px';
+      st.left = Math.round(x - (CECIL.w * scale) / 2) + 'px'; st.top = Math.round(feetY - CECIL.h * scale) + 'px';
+    },
+    /** Hide a share (0 to 0.5) of each side, for standing behind closing lift doors. */
+    clip(side) { canvas.style.clipPath = side > 0 ? `inset(0 ${Math.min(50, side * 100)}% 0 ${Math.min(50, side * 100)}%)` : ''; },
+    show(on) { canvas.style.visibility = on ? '' : 'hidden'; },
+  };
 }
 
 // ---------- sound: synthesised blips, off until the visitor turns it on ----------

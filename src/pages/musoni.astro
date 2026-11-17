@@ -1,9 +1,10 @@
 ---
-// Behind the Musoni door. Long-form copy lives in this file; facts are listed in HANDOFF.md.
+// Floor 01 of the Projects building: the lift opens straight into this room. Long-form copy lives in this file; facts are listed in HANDOFF.md.
 // Rule: name features and safeguards, never how they are built.
 import Night from '../layouts/Night.astro';
+import { musoniBrand } from '../content/brands.js';
 
-const ACCENT = '#ff9a5c';
+const ACCENT = musoniBrand.green;
 const sections = [
   ['brief', 'The brief'],
   ['the-app', 'The app'],
@@ -18,7 +19,7 @@ const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
 
 <Night title="Musoni: the loan app I led. Cecil Lwala" description="A lending platform Cecil Lwala led: Flutter app, Spring Boot backend, staff portal and a USSD channel for any phone." accent={ACCENT}>
   <header class="bar">
-    <a class="chip" href="/projects#musoni">← Projects building</a>
+    <a class="chip" href="/projects">← Projects building</a>
     <span class="sp"></span>
     <button class="chip" id="snd" type="button" aria-pressed="false">Sound: off</button>
     <a class="chip" href="/work">All work</a>
@@ -26,7 +27,8 @@ const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
 
   <section class="room" aria-label="Inside the Musoni shop">
     <div class="stage" id="room-stage">
-      <canvas id="room" role="img" aria-label="Inside the Musoni shop at night: a counter with a smartphone and a feature phone on it, a server on a shelf, a wall monitor, a safe, and a door back to the Projects building. Pixel Cecil stands by the window."></canvas>
+      <canvas id="room" role="img" aria-label="Inside the Musoni shop at night: a counter with a smartphone and a feature phone on it, a server on a shelf, a wall monitor, a safe, and the lift back down to the Projects lobby. Pixel Cecil steps out of the lift."></canvas>
+      <canvas class="room-cecil" id="room-cecil" aria-hidden="true"></canvas>
       <div class="bubble off" id="room-bubble" aria-live="polite"><span class="typed"></span><span class="rest"></span><div class="chips"></div></div>
       <div class="tip" id="room-tip" hidden></div>
       <nav class="sr" aria-label="Things in the shop" id="room-places"></nav>
@@ -35,8 +37,7 @@ const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
 
   <main class="page">
     <header class="title">
-      <h1 class="sr">Musoni</h1>
-      <canvas class="neon-title" data-text="MUSONI" data-color={ACCENT} aria-hidden="true"></canvas>
+      <h1 class="musoni-wordmark"><img src={musoniBrand.logoOnDark} alt="Musoni" width="286" height="53" /></h1>
       <p class="sub">The loan app I led: a mobile app, its backend, a staff portal, and a USSD channel for any phone.</p>
       <dl class="facts">
         <dt>Role</dt><dd>Lead developer, at GikTek</dd>
@@ -150,7 +151,7 @@ const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
         </section>
 
         <div class="next">
-          <a class="btn" href="/projects#musoni">Back to Projects</a>
+          <a class="btn" href="/projects">Back to Projects</a>
           <a class="btn ghost" href="/work">Everything in plain text</a>
         </div>
       </article>
@@ -163,3 +164,8 @@ const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
     initMusoni();
   </script>
 </Night>
+
+<style>
+  .musoni-wordmark { margin: 0 0 28px; }
+  .musoni-wordmark img { display: block; width: min(286px, 75vw); height: auto; }
+</style>

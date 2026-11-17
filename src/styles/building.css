@@ -1,58 +1,178 @@
-body:has(.career-building) { background: #080e22; background-image: radial-gradient(ellipse at 20% 25%,#1c244c88,transparent 60%); }
-.building-bar { display: flex; align-items: center; gap: 20px; padding: 18px clamp(18px,4vw,60px); border-bottom: 1px solid #ffffff18; }
+body:has(.career-building) { background: #080e22; }
+.career-building { height: 100svh; min-height: 540px; display: flex; flex-direction: column; overflow: hidden; }
+.building-bar { display: flex; align-items: center; gap: 20px; padding: 14px 24px; background: #080d20; border-bottom: 2px solid #34416a; position: relative; z-index: 10; }
 .building-bar a { color: var(--text); font-size: 13px; text-decoration: none; }
-.building-bar__name { flex: 1; color: var(--dim); font-size: 12px; }
-.career-building { max-width: 1360px; margin: auto; padding: 32px clamp(18px,4vw,60px) 70px; }
-.building-heading { margin-bottom: 28px; }
-.building-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); }
-.building-heading h1 { font-size: clamp(32px,4vw,52px); line-height: 1.1; letter-spacing: -.04em; font-weight: 550; margin: 8px 0 14px; }
-.building-heading h1 span { color: var(--accent); }
-.building-heading p { margin: 0; color: #b8bfd5; font-size: 14px; max-width: 650px; }
-.building-layout { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(300px,1fr); align-items: start; gap: clamp(24px,4vw,60px); }
-.building-cutaway { position: relative; min-width: 0; padding-left: 66px; border: 4px solid #384269; border-bottom: 0; background: #10162f; box-shadow: 8px 8px 0 #03071a; }
-.building-roof { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-bottom: 4px solid #384269; color: var(--accent); background: #131b3b; }
-.building-roof > span { font-size: 14px; font-weight: 600; }
-.building-roof small { font-size: 10px; color: var(--dim); }
-.building-shaft { position: absolute; left: 0; top: 0; bottom: 0; width: 66px; border-right: 3px solid #384269; background: repeating-linear-gradient(0deg,#10162b 0 30px,#29324c 30px 32px); }
-.building-shaft > span { display: block; text-align: center; font-size: 9px; color: var(--dim); padding-top: 14px; }
-.building-lift { position: absolute; left: 5px; width: 50px; height: 68px; background: #353e56; border: 2px solid #7a869b; border-bottom: 4px solid var(--accent); transition: top 700ms cubic-bezier(.4,0,.2,1); display: grid; place-items: end center; }
-.building-cecil { width: 36px; height: 48px; background: url('/sprites/cecil-town.png') 0 0 / 360px 48px no-repeat; image-rendering: pixelated; }
-.building-floor { position: relative; display: block; width: 100%; height: 208px; border: 0; border-bottom: 6px solid #3b4467; background: #17213c; text-align: left; color: var(--text); cursor: pointer; padding: 0; font: inherit; overflow: hidden; }
-.building-floor::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-left: 4px solid transparent; }
-.building-floor[aria-pressed=true]::after { border-left-color: var(--floor-color); box-shadow: inset 0 0 0 1px var(--floor-color); }
-.building-floor:hover { filter: brightness(1.1); }
-.floor-scene { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
-.floor-number { position: absolute; left: 15px; top: 16px; color: #b7bfd6; font-size: 18px; line-height: 1; }
-.floor-number small { display: block; font-size: 8px; letter-spacing: .1em; margin-top: 5px; }
-.floor-brand { position: absolute; left: 62px; top: 16px; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #ffffff25; background: #10172ded; border-bottom: 2px solid var(--floor-color); }
-.floor-monogram { width: 28px; height: 28px; display: grid; place-items: center; color: #0a1125; background: var(--floor-color); font-size: 18px; font-weight: 700; }
-.floor-brand img { max-width: 40px; max-height: 30px; }
-.floor-brand strong { display: block; font-size: 16px; font-weight: 600; line-height: 1.2; }
-.floor-brand small { display: block; font-size: 10px; color: var(--floor-color); margin-top: 3px; }
-.floor-enter { position: absolute; bottom: 16px; right: 18px; padding: 5px 9px; border-radius: 4px; background: #090f23da; color: #cbd1dc; font-size: 10px; }
-.construction-label { position: absolute; left: 14px; bottom: 13px; color: #ffe3a0; background: #292516de; padding: 4px 8px; font-size: 9px; }
-.building-lobby { padding: 24px 18px; border-bottom: 6px solid #384269; background: #202745; }
-.building-lobby span { display: block; font-size: 11px; color: var(--accent); letter-spacing: .06em; }
-.building-lobby small { color: var(--dim); font-size: 10px; }
-.floor-conversations { position: sticky; top: 24px; min-width: 0; }
-.floor-guidance { font-size: 12px; color: var(--dim); margin: 0 0 14px; }
-.floor-story { position: relative; background: #f1eddd; border: 3px solid #151b35; color: #263145; box-shadow: 5px 5px 0 #010517; padding: 26px; font-size: 14px; line-height: 1.65; }
-.floor-story[hidden] { display: none; }
-.floor-story::before { content: ''; position: absolute; width: 15px; height: 15px; left: -10px; top: 38px; background: #f1eddd; border: solid #151b35; border-width: 0 0 3px 3px; transform: rotate(45deg); }
-.floor-story h2 { font-size: 28px; line-height: 1.1; letter-spacing: -.03em; margin: 10px 0; }
-.floor-story .building-eyebrow { color: #636b79; }
-.floor-period { font-size: 11px; color: #636b79; margin: 0 0 8px; }
-.floor-status { display: inline-block; font-size: 10px; border: 1px solid #939998; border-radius: 4px; padding: 2px 7px; }
-.floor-role { font-weight: 650; margin-top: 18px; }
+.building-bar h1 { margin: 0; flex: 1; text-align: center; font-size: 16px; font-weight: 550; }
+.building-bar .chip { font-size: 12px; }
+.elevator-stage { flex: 1; min-height: 0; position: relative; overflow: hidden; background: #0c142d; }
+.scene-window { position: absolute; inset: 0; overflow: hidden; }
+.elevator-world { position: absolute; }
+#building-scene { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+#building-cecil { position: absolute; image-rendering: pixelated; pointer-events: none; }
+.scene-plaque { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; background: var(--plaque-bg,#111a31); border: 3px solid #52647c; box-shadow: 4px 4px 0 #030917; color: #f4efd8; padding: 12px 18px; font-size: 16px; white-space: nowrap; max-width: calc(100% - 32px); }
+.plaque-number { color: var(--floor-accent,var(--accent)); font-size: 22px; font-variant-numeric: tabular-nums; padding-right: 12px; border-right: 1px solid #ffffff40; }
+#plaque-name img { display: block; width: 135px; height: auto; }
+.elevator-conversation { position: absolute; left: 24px; bottom: 28px; width: min(350px,32vw); background: #f1eddd; color: #263145; border: 3px solid #151b35; box-shadow: 5px 5px 0 #010517; padding: 18px 20px; font-size: 13px; line-height: 1.5; }
+.elevator-conversation::after { content: ''; position: absolute; right: 22px; bottom: -11px; width: 16px; height: 16px; background: #f1eddd; border: solid #151b35; border-width: 0 3px 3px 0; transform: rotate(45deg); }
+.floor-arrival[hidden],.travel-message[hidden],.floor-story[hidden] { display: none; }
+.floor-arrival h2 { font-size: 19px; line-height: 1.2; margin: 2px 0 8px; font-weight: 650; }
+.floor-arrival p { margin: 0 0 8px; }
+.floor-arrival small { color: #626977; font-size: 10px; }
+.arrival-eyebrow { display: block; color: #626977; font-size: 10px; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+.arrival-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.arrival-actions > * { font: inherit; font-size: 11px; border: 2px solid #263145; background: #f1eddd; color: #18243c; padding: 7px 9px; text-decoration: none; cursor: pointer; }
+.arrival-actions a { background: var(--floor-accent,var(--accent)); }
+.travel-message { margin: 0; }
+.elevator-controls { position: absolute; right: 24px; bottom: 28px; width: 220px; border: 3px solid #8090a4; border-right-color: #29374e; border-bottom-color: #29374e; padding: 14px; background: linear-gradient(110deg,#344258,#202b3e 80%); box-shadow: 5px 5px 0 #050b1b; }
+.elevator-control-heading { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ffffff25; padding-bottom: 12px; margin-bottom: 10px; }
+.elevator-control-heading > span { font-size: 10px; letter-spacing: .13em; color: #d0d7df; }
+#lift-display { font-size: 22px; min-width: 58px; text-align: center; font-variant-numeric: tabular-nums; line-height: 1.2; border: 2px inset #566171; background: #080f1b; color: #ffd27a; padding: 5px; }
+.elevator-buttons { display: flex; flex-direction: column; gap: 8px; }
+.elevator-buttons button { display: flex; align-items: center; gap: 10px; padding: 5px; text-align: left; background: #121b2a; border: 1px solid #5a6879; color: #e1e7ef; cursor: pointer; font: inherit; }
+.lift-key { display: grid; place-items: center; width: 37px; height: 37px; flex-shrink: 0; border: 3px solid #8a96a4; border-radius: 50%; background: #2c394c; box-shadow: inset 1px 1px 0 #c0c6cf,inset -2px -2px 0 #101a2a; font-size: 14px; font-weight: 600; }
+.lift-key-label { flex: 1; font-size: 11px; line-height: 1.3; }
+.lift-key-label small { display: block; font-size: 8px; color: #a2adbd; margin-top: 3px; }
+.lift-key-light { width: 5px; height: 5px; background: #485565; margin-right: 3px; }
+.elevator-buttons button[aria-pressed=true] .lift-key, .elevator-buttons button.is-pending .lift-key { border-color: var(--button-light); color: var(--button-light); }
+.elevator-buttons button[aria-pressed=true] .lift-key-light, .elevator-buttons button.is-pending .lift-key-light { background: var(--button-light); box-shadow: 0 0 8px var(--button-light); }
+.elevator-buttons button:disabled { cursor: wait; }
+.elevator-controls > p { font-size: 9px; color: #b0bdce; text-align: center; margin: 12px 0 0; }
+.floor-details { width: min(610px,calc(100% - 28px)); max-height: 85svh; border: 3px solid #283650; background: #fff; color: #263238; padding: 26px; box-shadow: 8px 8px 0 #010517; }
+.floor-details::backdrop { background: #03091bd9; }
+.details-close { display: block; margin-left: auto; font: inherit; font-size: 12px; background: #fff; border: 1px solid #6a7581; padding: 6px 10px; cursor: pointer; }
+.floor-story { font-size: 14px; line-height: 1.65; }
+.floor-story h3 { font-size: 28px; margin: 18px 0; }
+.floor-story h3 img { display: block; width: 180px; max-width: 100%; height: auto; }
+.floor-period { color: #54636c; font-size: 11px; }
 .floor-story ul { padding-left: 18px; }
 .floor-story li { margin-bottom: 8px; }
-.floor-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-block: 18px; }
-.floor-tags span { font-size: 10px; padding: 3px 7px; background: #2631450c; border: 1px solid #26314524; }
-.floor-action { display: inline-block; color: #18243c; font-size: 12px; font-weight: 650; border: 1px solid #263145; background: var(--floor-color); text-decoration: none; padding: 11px 14px; }
-.floor-site-note { font-size: 12px; color: #646957; border-top: 1px solid #26314522; padding-top: 14px; }
-.freelance-note,.building-keyboard { font-size: 11px; color: var(--dim); margin-top: 18px; line-height: 1.7; }
-@media (max-width: 880px) { .building-layout { grid-template-columns: 1fr; } .floor-conversations { position: static; } .building-heading { margin-bottom: 20px; } .building-bar__name { display: none; } .building-bar { justify-content: space-between; padding: 14px 18px; } .floor-story::before { display: none; } }
-@media (max-width: 480px) { .career-building { padding: 24px 14px 50px; } .building-cutaway { padding-left: 50px; } .building-shaft { width: 50px; } .building-lift { width: 40px; left: 3px; } .building-roof { padding: 12px 10px; } .building-roof > span { font-size: 12px; } .building-roof small { font-size: 8px; } .building-floor { height: 188px; } .floor-brand { left: 47px; top: 12px; padding: 8px; gap: 6px; } .floor-brand strong { font-size: 13px; } .floor-brand small { font-size: 8px; } .floor-monogram { width: 24px; height: 24px; font-size: 15px; } .floor-number { left: 10px; font-size: 15px; } .floor-story { padding: 20px; } .construction-label { left: 8px; right: 8px; bottom: 38px; font-size: 8px; } .floor-enter { bottom: 10px; } }
-@media (prefers-reduced-motion: reduce) { .building-lift { transition: none; } }
-/* Crop the room on phones instead of stretching Cecil and the construction crew. */
-.floor-scene { object-fit: cover; object-position: center; }
+.floor-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-block: 18px; }
+.floor-tags span { font-size: 10px; border: 1px solid #26314530; padding: 3px 7px; }
+.floor-action { display: inline-block; background: var(--floor-color); color: var(--floor-ink); padding: 10px 14px; border: 1px solid var(--floor-ink); font-size: 12px; text-decoration: none; }
+/* ---------- on a floor: a walk along the wall, played like a game (src/scripts/floor-view.js) ---------- */
+@font-face { font-family: 'Departure Mono'; src: url('/fonts/DepartureMono-Regular.woff2') format('woff2'); font-display: swap; }
+.floor-view { position: absolute; inset: 0; z-index: 5; overflow: hidden; background: #050917; }
+.floor-view[hidden], .floor-viewer[hidden], .floor-closeup[hidden], .floor-says .arrival-actions[hidden], .floor-key[hidden], .floor-pad__label[hidden] { display: none; }
+.floor-window { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; }
+.floor-world { position: absolute; }
+#floor-scene { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+#floor-cecil { position: absolute; image-rendering: pixelated; pointer-events: none; }
+/* Everything on the wall is a real button laid over it. It shows a dashed frame when pointed at or focused. */
+.floor-thing { position: absolute; padding: 0; border: 0; background: none; cursor: pointer; outline: 2px dashed transparent; outline-offset: 5px; }
+.floor-thing:hover, .floor-thing:focus-visible { outline-color: #f4efd8; }
+/* The project's real screens: sharp, never pixelated. */
+.floor-thing--screen img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
+/* The thing that works hangs on the wall as itself, shrunk to fit; picking it up brings it close. */
+.floor-slot { position: absolute; pointer-events: none; }
+.floor-slot__fit { width: 300px; transform-origin: 0 0; transform: scale(var(--fit,.5)); }
+.floor-live .handset { font-size: 16px; }
+/* Lettering on the wall: real text in the site's pixel typeface, sized in scene pixels. */
+/* the whiteboard (rooms with a `board`): marks are SVG in board units, written one after another */
+@font-face { font-family: 'Patrick Hand'; src: url('/fonts/PatrickHand-Regular.woff2') format('woff2'); font-display: swap; }
+.floor-board { position: absolute; overflow: hidden; }
+.floor-board__ink { position: absolute; inset: 0; }
+.floor-board svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.floor-board text { font-family: 'Patrick Hand', 'Comic Neue', cursive; }
+.floor-board path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.floor-board.is-writing .w { animation: board-write .26s ease-out both; animation-delay: calc(var(--i) * var(--gap, 60ms)); }
+.floor-board.is-writing path.w { stroke-dasharray: 1; animation-name: board-stroke; }
+@keyframes board-write { from { clip-path: inset(-30% 100% -30% 0); } to { clip-path: inset(-30% 0 -30% 0); } }
+@keyframes board-stroke { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.floor-pin { position: absolute; padding: 2%; background: #fbfaf5; border: 0; box-shadow: 2px 3px 0 #0003; transform: rotate(var(--tilt, 0deg)); cursor: pointer; outline: 2px dashed transparent; outline-offset: 3px; }
+.floor-pin img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: left top; pointer-events: none; }
+.floor-pin::before { content: ''; position: absolute; z-index: 1; left: 50%; top: -5%; width: 18%; aspect-ratio: 1; max-width: 12px; translate: -50% 0; background: #c43a2e; border-radius: 50%; box-shadow: inset -2px -2px 0 #0004; }
+.floor-pin:hover, .floor-pin:focus-visible { outline-color: #2547a6; }
+.floor-board.is-writing .floor-pin { animation: board-pin .22s ease-out both; animation-delay: calc(var(--i) * var(--gap, 60ms)); }
+@keyframes board-pin { from { opacity: 0; transform: translateY(-6%) rotate(var(--tilt, 0deg)); } }
+.floor-board__eraser { position: absolute; width: 10%; height: 24%; background: #2f3446; border-bottom: calc(var(--scale, 2.6) * 2px) solid #cfc6b0; box-shadow: 2px 2px 0 #0004; pointer-events: none; }
+.floor-board__eraser[hidden] { display: none; }
+.floor-label { position: absolute; font-family: 'Departure Mono', ui-monospace, monospace; font-size: calc(var(--scale,2.6) * var(--size,7.5) * 1px); line-height: 1; white-space: nowrap; pointer-events: none; }
+.floor-label--center { transform: translateX(-50%); }
+.floor-label--right { transform: translateX(-100%); }
+.floor-leave { position: absolute; z-index: 2; top: 4px; left: 24px; display: flex; align-items: center; gap: 9px; padding: 5px 11px; background: #0b1326; border: 2px solid #52647c; box-shadow: 3px 3px 0 #030917; color: #e1e7ef; font: inherit; font-size: 13px; cursor: pointer; }
+.floor-leave .floor-key__arrow { border-width: 6px; border-left-width: 9px; border-left-color: #e1e7ef; }
+/* The stops, like stages on a level map. */
+.floor-pips { position: absolute; z-index: 2; top: 9px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+.floor-pip { width: 18px; height: 18px; padding: 0; background: #1b2748; border: 3px solid #02040d; cursor: pointer; }
+.floor-pip.is-seen { background: #3d6b1f; }
+.floor-pip.is-here { background: #61bc00; }
+.floor-pip:focus-visible, .floor-key:focus-visible, .floor-says:focus-visible, .floor-leave:focus-visible { outline: 2px dashed #f4efd8; outline-offset: 3px; }
+/* Cecil's words: a dialogue box. A click, Space or Enter gives the next line. */
+.floor-says { position: absolute; z-index: 5; left: var(--says-left,24px); bottom: 28px; width: min(590px,42vw); min-height: 132px; padding: 26px 26px 36px; background: #f1eddd; color: #263145; border: 4px solid #151b35; box-shadow: 6px 6px 0 #010517; font-size: 18px; line-height: 1.45; cursor: pointer; }
+.floor-says::before { content: ''; position: absolute; left: -13px; top: 52px; width: 18px; height: 18px; background: #f1eddd; border: solid #151b35; border-width: 0 0 4px 4px; transform: rotate(45deg); }
+.floor-says p { margin: 0; }
+.floor-says__name { position: absolute; left: 22px; top: -20px; padding: 5px 16px; background: #151b35; color: #f1eddd; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.floor-says__page { position: absolute; left: 26px; bottom: 9px; font-size: 12px; color: #7a8296; }
+.floor-says__more { position: absolute; right: 22px; bottom: 13px; width: 0; height: 0; border: 9px solid transparent; border-top: 12px solid #151b35; border-bottom: 0; visibility: hidden; }
+.floor-says.has-more .floor-says__more { visibility: visible; }
+.floor-says .arrival-actions { margin-top: 12px; }
+/* The game buttons: walk left and right, and A for whatever the stop offers. */
+.floor-pad { position: absolute; z-index: 5; right: 30px; bottom: 30px; display: flex; align-items: flex-start; gap: 36px; }
+.floor-pad__group { display: grid; justify-items: center; gap: 9px; }
+.floor-pad__keys { display: flex; gap: 10px; }
+.floor-pad__label { font-size: 12px; color: #aab6d6; }
+.floor-key { display: grid; place-items: center; width: 58px; height: 58px; padding: 0; background: #c9cff0; color: #151b35; border: 4px solid #02040d; border-bottom-width: 10px; border-radius: 8px; font: inherit; font-size: 22px; font-weight: 700; cursor: pointer; }
+.floor-key:active:not(:disabled) { border-bottom-width: 4px; transform: translateY(6px); }
+.floor-key:disabled { opacity: .35; cursor: default; }
+.floor-key--a { width: 66px; height: 66px; border-radius: 50%; background: #ffd27a; }
+.floor-key__arrow { width: 0; height: 0; border: 11px solid transparent; border-left: 16px solid #151b35; border-right: 0; }
+.floor-key__arrow--left { transform: rotate(180deg); }
+/* Something held up close: the room dims, the walk controls step aside, and his words run along the bottom. */
+.floor-view.is-using::after { content: ''; position: absolute; z-index: 3; inset: 0; background: #03091bcc; }
+.floor-view.is-using .floor-pad, .floor-view.is-using .floor-pips, .floor-view.is-using .floor-leave { visibility: hidden; }
+.floor-view.is-using .floor-says { left: 50%; bottom: 16px; width: min(720px,calc(100% - 48px)); min-height: 0; transform: translateX(-50%); padding: 22px 18px 12px; font-size: 15px; cursor: default; }
+.floor-view.is-using .floor-says::before, .floor-view.is-narrow .floor-says::before, .floor-view.is-using .floor-says__page { display: none; }
+.floor-viewer { position: absolute; z-index: 4; inset: 16px 24px 150px; display: flex; overflow: auto; }
+.floor-viewer img { margin: auto; max-width: 100%; max-height: 100%; border: 3px solid #02040d; box-shadow: 6px 6px 0 #010517; cursor: pointer; }
+.floor-closeup { position: absolute; z-index: 4; inset: 12px 24px 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.closeup-note { max-width: 300px; margin: 10px 0 0; font-size: 11px; line-height: 1.4; text-align: center; color: #c9cff0; }
+.floor-closeup__done { padding: 8px 12px; background: #0b1326; border: 2px solid #f4efd8; color: #f4efd8; font: inherit; font-size: 12px; cursor: pointer; }
+@media(max-height:760px) { .floor-closeup .handset { zoom: .8; } }
+/* A screen too narrow for a whole stop: the room sits near the top, with the stops above it and his words and the buttons below. */
+.floor-view.is-narrow .floor-pips { top: 22px; left: auto; right: 14px; transform: none; gap: 6px; }
+.floor-view.is-narrow .floor-pip { width: 15px; height: 15px; }
+.floor-view.is-narrow .floor-leave { top: 10px; left: 12px; padding: 7px 10px; font-size: 12px; }
+.floor-view.is-narrow:not(.is-using) .floor-says { top: calc(var(--room-bottom) + 28px); bottom: auto; left: 14px; right: 14px; width: auto; height: 150px; min-height: 0; padding: 18px 16px 28px; font-size: 14px; }
+.floor-view.is-narrow.is-using .floor-says { left: 14px; right: 14px; bottom: 14px; width: auto; transform: none; }
+.floor-view.is-narrow .floor-pad { right: 50%; top: calc(var(--room-bottom) + 192px); bottom: auto; transform: translateX(50%); gap: 44px; }
+.floor-view.is-narrow .floor-key { width: 52px; height: 52px; }
+.floor-view.is-narrow .floor-pad__label { white-space: nowrap; }
+.floor-view.is-narrow .floor-key--a { width: 58px; height: 58px; }
+.floor-view.is-tight:not(.is-using) .floor-says { top: calc(var(--room-bottom) + 20px); height: 128px; padding: 14px 14px 22px; font-size: 13px; }
+.floor-view.is-tight .floor-pad { top: calc(var(--room-bottom) + 156px); }
+.floor-view.is-tight .floor-key { width: 46px; height: 46px; }
+.floor-view.is-tight .floor-key--a { width: 52px; height: 52px; }
+.floor-view.is-narrow .floor-viewer { inset: 12px 12px 150px; }
+.floor-view.is-narrow .floor-viewer img { max-width: none; height: 100%; }
+@media(max-width:700px) {
+  .career-building { min-height: 600px; }
+  .floor-closeup { inset: 8px 12px 96px; gap: 6px; }
+  .floor-closeup .handset { zoom: .78; }
+  .closeup-note { margin-top: 6px; font-size: 10px; }
+  .building-bar { padding: 11px 14px; gap: 10px; }
+  .building-bar h1 { font-size: 13px; }
+  .building-bar a,.building-bar .chip { font-size: 10px; }
+  .scene-window { bottom: 174px; }
+  .scene-plaque { top: 16px; font-size: 13px; padding: 8px 12px; gap: 8px; }
+  .plaque-number { font-size: 18px; padding-right: 8px; }
+  #plaque-name img { width: 115px; }
+  .elevator-conversation { left: 14px; right: 14px; top: 83px; bottom: auto; width: auto; padding: 10px 14px; font-size: 11px; }
+  .floor-arrival h2 { font-size: 15px; margin-bottom: 4px; }
+  .floor-arrival p { margin-bottom: 3px; }
+  .floor-arrival small { font-size: 9px; }
+  .arrival-eyebrow { font-size: 9px; margin-bottom: 3px; }
+  .arrival-actions { margin-top: 7px; gap: 6px; }
+  .arrival-actions > * { font-size: 10px; padding: 5px 8px; }
+  .elevator-controls { bottom: 12px; left: 14px; right: 14px; width: auto; padding: 10px; }
+  .elevator-control-heading { padding-bottom: 6px; margin-bottom: 7px; }
+  #lift-display { font-size: 17px; padding: 2px; }
+  .elevator-buttons { flex-direction: row; }
+  .elevator-buttons button { flex: 1; min-width: 0; flex-direction: column; gap: 4px; padding: 7px 2px; position: relative; text-align: center; }
+  .lift-key { width: 32px; height: 32px; font-size: 12px; }
+  .lift-key-label { font-size: 9px; }
+  .lift-key-label small { display: none; }
+  .lift-key-light { position: absolute; right: 3px; top: 4px; }
+  .elevator-controls > p { margin-top: 6px; font-size: 8px; }
+  .floor-details { padding: 20px; }
+}
+@media(max-height:620px) and (min-width:701px) { .career-building { min-height: 420px; } .elevator-conversation { bottom: 16px; padding: 12px; } .elevator-controls { bottom: 16px; } }

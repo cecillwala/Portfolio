@@ -1,0 +1,6 @@
+---
+// Prints a value from src/content/profile.js, with a visible tag while it is still sample data.
+import { DRAFT, say, isSample } from '../content/profile.js';
+const { v } = Astro.props;
+---
+{say(v)}{DRAFT && isSample(v) && <span class="sample-tag" title="Placeholder, to be replaced with real data">sample</span>}

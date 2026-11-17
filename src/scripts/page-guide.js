@@ -46,12 +46,12 @@ export function initPageGuide() {
     if (guide.parentElement !== next.slot) next.slot.append(guide);
     guide.querySelector('.page-guide__words').textContent = notes[next.id];
     guide.dataset.section = next.id;
-    const available = Math.max(0, next.slot.clientWidth - 60);
+    const available = Math.max(0, next.slot.clientWidth - 72);
     const x = available * next.position;
     const bubbleLeft = Math.max(0, Math.min(next.slot.clientWidth - 290, x - 115));
     guide.style.setProperty('--stop-x', x + 'px');
     guide.style.setProperty('--speech-x', bubbleLeft + 'px');
-    guide.style.setProperty('--speech-tail', (x + 30 - bubbleLeft) + 'px');
+    guide.style.setProperty('--speech-tail', (x + 36 - bubbleLeft) + 'px');
     if (!changed) return;
     clearTimeout(walkingTimer);
     animation?.cancel();
